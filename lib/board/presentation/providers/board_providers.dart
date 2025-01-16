@@ -7,15 +7,16 @@ class BoardProvider with ChangeNotifier {
   List<Board> boards = [];
   bool isLoading = false;
   String message = '';
-  int totalItems = 0;  // totalItems 값 추가
-  int totalPages = 0;  // totalPages 값 추가
+  int totalItems = 0;
+  int totalPages = 0;
+  int currentPage = 1;
 
   BoardProvider({required this.listBoardsUseCase}) {
     _initBoards();
   }
 
   Future<void> _initBoards() async {
-    await listBoards(1, 10);
+    await listBoards(currentPage, 6);  // 초기 페이지 로드
   }
 
   Future<void> listBoards(int page, int perPage) async {
@@ -23,25 +24,27 @@ class BoardProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // 수정된 부분: `call` 메소드 명시적으로 호출
-      final data = await listBoardsUseCase.call(page, perPage);  // `call`을 명시적으로 호출
+      final response = await listBoardsUseCase.call(page, perPage);
 
-      print('Received boards data: $data');  // 데이터 출력 추가
-
-      if (data.isEmpty) {
+      if (response.boards.isEmpty) {
         message = '등록된 내용이 없습니다';
       } else {
-        boards = data;
-        // 페이지네이션 정보 업데이트
-        totalItems = data.length;  // 데이터를 기반으로 총 아이템 수 업데이트
-        totalPages = (totalItems / perPage).ceil();  // 전체 페이지 수 계산
+        boards = response.boards;
+        totalItems = response.totalItems;
+        totalPages = response.totalPages;  // 서버에서 받아온 totalPages 사용
+        currentPage = page;
       }
     } catch (e) {
       message = '게시글을 가져오는 데 오류가 발생했습니다.';
-      print('Error: $e');  // 에러 출력 추가
     }
 
     isLoading = false;
     notifyListeners();
+  }
+
+  void changePage(int page) async {
+    if (page >= 1 && page <= totalPages) {
+      await listBoards(page, 6);  // 페이지 변경 시 해당 페이지 데이터를 요청
+    }
   }
 }

@@ -2,86 +2,164 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/board_providers.dart';
 
-class BoardListPage extends StatelessWidget {
+class BoardListPage extends StatefulWidget {
+  @override
+  _BoardListPageState createState() => _BoardListPageState();
+}
+
+class _BoardListPageState extends State<BoardListPage> {
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  // 페이지를 클릭했을 때 호출되는 함수
+  void _onPageChanged(int page) {
+    final boardProvider = Provider.of<BoardProvider>(context, listen: false);
+    boardProvider.changePage(page);  // 페이지 변경
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Board List'),
-        backgroundColor: Colors.deepPurple, // 색상 변경
-        elevation: 0, // 그림자 제거
+        backgroundColor: Colors.deepPurple,
+        elevation: 0,
       ),
-      body: Consumer<BoardProvider>(
-        builder: (context, boardProvider, child) {
-          if (boardProvider.isLoading) {
-            return Center(child: CircularProgressIndicator());
-          }
+      body: SafeArea(
+        child: Consumer<BoardProvider>(
+          builder: (context, boardProvider, child) {
+            if (boardProvider.isLoading && boardProvider.boards.isEmpty) {
+              return Center(child: CircularProgressIndicator());
+            }
 
-          if (boardProvider.message.isNotEmpty) {
-            return Center(child: Text(boardProvider.message));
-          }
+            if (boardProvider.message.isNotEmpty) {
+              return Center(child: Text(boardProvider.message));
+            }
 
-          return ListView.builder(
-            padding: EdgeInsets.all(16.0), // ListView에 패딩 추가
-            itemCount: boardProvider.boards.length,
-            itemBuilder: (context, index) {
-              final board = boardProvider.boards[index];
-              return Card(
-                elevation: 5, // 카드 그림자 효과 추가
-                margin: EdgeInsets.symmetric(vertical: 8), // 카드 간의 간격
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12), // 둥근 카드 모서리
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0), // 카드 내부 여백
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        board.title,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple, // 제목 색상
-                        ),
-                      ),
-                      SizedBox(height: 8), // 제목과 내용 간격
-                      Text(
-                        board.content,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black87, // 내용 색상
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis, // 내용이 길면 잘리도록 설정
-                      ),
-                      SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            return SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ListView section
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: List.generate(boardProvider.boards.length, (index) {
+                        final board = boardProvider.boards[index];
+                        return Card(
+                          elevation: 5,
+                          margin: EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  board.title,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.deepPurple,
+                                  ),
+                                ),
+                                SizedBox(height: 4.5), // This can be adjusted as needed
+                                Text(
+                                  board.content,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black87,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(height: 4.5), // This can be adjusted as needed
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      board.nickname.isEmpty ? '익명' : board.nickname,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    Text(
+                                      board.createDate,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                  // Pagination section
+                  if (boardProvider.totalPages > 0)
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            board.nickname.isEmpty ? '익명' : board.nickname,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          Text(
-                            board.createDate,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
+                          if (boardProvider.currentPage > 1)
+                            _buildPageButton('Prev', boardProvider.currentPage - 1),
+                          ...List.generate(boardProvider.totalPages, (index) {
+                            int pageNum = index + 1;
+                            return _buildPageButton(
+                              '$pageNum',
+                              pageNum,
+                              isCurrentPage: pageNum == boardProvider.currentPage,
+                            );
+                          }),
+                          if (boardProvider.currentPage < boardProvider.totalPages)
+                            _buildPageButton('Next', boardProvider.currentPage + 1),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPageButton(String label, int page, {bool isCurrentPage = false}) {
+    return GestureDetector(
+      onTap: () => _onPageChanged(page),
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 4),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isCurrentPage ? Colors.deepPurple : Colors.grey[200],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isCurrentPage ? Colors.white : Colors.deepPurple,
+          ),
+        ),
       ),
     );
   }

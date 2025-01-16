@@ -1,5 +1,5 @@
-import '../entity/board.dart';
+import '../responses/board_list_response.dart';
 
 abstract class ListBoardsUseCase {
-  Future<List<Board>> call(int page, int perPage);
+  Future<BoardListResponse> call(int page, int perPage);
 }
