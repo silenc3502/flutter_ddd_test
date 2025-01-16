@@ -1,6 +1,5 @@
 import '../../infrastructure/repository/board_repository.dart';
 import '../entity/board.dart';
-
 import 'list_boards_usecase.dart';
 
 class ListBoardsUseCaseImpl implements ListBoardsUseCase {
@@ -10,6 +9,9 @@ class ListBoardsUseCaseImpl implements ListBoardsUseCase {
 
   @override
   Future<List<Board>> call(int page, int perPage) async {
-    return await _repository.listBoards(page, perPage);
+    print('Calling use case to fetch boards...');
+    final boards = await _repository.listBoards(page, perPage);
+    print('Fetched boards from use case: $boards');
+    return boards;
   }
 }

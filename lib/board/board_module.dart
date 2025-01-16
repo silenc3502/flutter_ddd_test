@@ -16,11 +16,13 @@ class BoardModule {
         ChangeNotifierProvider<BaseUrlProvider>(
           create: (_) => BaseUrlProvider(),
         ),
-        Provider<BoardRemoteDataSource>(
-          create: (context) => BoardRemoteDataSource(context),
+        ProxyProvider<BaseUrlProvider, BoardRemoteDataSource>(
+          update: (_, baseUrlProvider, __) =>
+              BoardRemoteDataSource(baseUrlProvider.baseUrl),
         ),
         ProxyProvider<BoardRemoteDataSource, BoardRepositoryImpl>(
-          update: (_, dataSource, __) => BoardRepositoryImpl(dataSource),
+          update: (_, remoteDataSource, __) =>
+              BoardRepositoryImpl(remoteDataSource),
         ),
         ProxyProvider<BoardRepositoryImpl, ListBoardsUseCaseImpl>(
           update: (_, repository, __) => ListBoardsUseCaseImpl(repository),
@@ -31,7 +33,7 @@ class BoardModule {
           ),
         ),
       ],
-      child: const BoardListPage(),
+      child: BoardListPage(),
     );
   }
 }

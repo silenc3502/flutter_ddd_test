@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-import 'board/presentation/ui/board_list_page.dart';
-import 'config/base_url_provider.dart';
+import 'board/board_module.dart';
 
 void main() async {
-  await dotenv.load(); // .env 파일 로드
+  // .env 파일 로드
+  await dotenv.load();
 
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) => BaseUrlProvider(),
-      child: MyApp(),
-    ),
-  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -21,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter App',
-      home: BoardListPage(), // 시작 화면 설정
+      home: BoardModule.provideBoardListPage(), // BoardModule을 통해 의존성 주입된 페이지 제공
     );
   }
 }
