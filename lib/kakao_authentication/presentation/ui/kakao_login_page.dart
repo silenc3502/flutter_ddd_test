@@ -1,43 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/kakao_auth_providers.dart';
 
 class KakaoLoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final kakaoAuthProvider = Provider.of<KakaoAuthProvider>(context);
-
     return Scaffold(
       appBar: AppBar(
-        title: Text("Kakao Login"),
-        backgroundColor: Colors.deepPurple,
+        title: Text('Kakao Login'),
       ),
-      body: Center(
-        child: kakaoAuthProvider.isLoggedIn
-            ? Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "Welcome, ${kakaoAuthProvider.user?.nickname ?? 'User'}!",
-              style: TextStyle(fontSize: 20),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                await kakaoAuthProvider.logout();
-                Navigator.pop(context);
-              },
-              child: Text("Log Out"),
-            ),
-          ],
-        )
-            : ElevatedButton(
-          onPressed: () async {
-            await kakaoAuthProvider.login();
-            await kakaoAuthProvider.fetchUserInfo();
-            Navigator.pop(context);
-          },
-          child: Text("Log in with Kakao"),
-        ),
+      body: Consumer<KakaoAuthProvider>(
+        builder: (context, provider, child) {
+          return Center(
+            child: provider.isLoggedIn
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('로그인 성공!'),
+                      ElevatedButton(
+                        onPressed: () {
+                          provider.logoutFromKakao();
+                        },
+                        child: Text('Logout'),
+                      ),
+                    ],
+                  )
+                : ElevatedButton(
+                    onPressed: () {
+                      provider.loginWithKakao();
+                    },
+                    child: Text('Login with Kakao'),
+                  ),
+          );
+        },
       ),
     );
   }

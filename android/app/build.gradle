@@ -21,6 +21,24 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+import java.util.Properties
+
+// .env 파일 경로
+def envFile = file('/home/oem/proj/flutter_ddd_test/.env')
+
+if (envFile.exists()) {
+    def properties = new Properties()
+    envFile.withReader("UTF-8") { reader ->
+        properties.load(reader)
+    }
+    // .env 파일의 값을 환경 변수로 설정
+    project.ext {
+        KAKAO_NATIVE_APP_KEY = properties.getProperty("KAKAO_NATIVE_APP_KEY")
+    }
+} else {
+    throw new GradleException(".env file not found")
+}
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
@@ -43,6 +61,43 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
+    signingConfigs {
+        debug {
+            storeFile file('/home/oem/.android/debug.keystore')  // debug 키스토어 경로
+            storePassword 'android'                              // debug 키스토어 비밀번호
+            keyAlias 'androiddebugkey'                           // debug 키 별칭
+            keyPassword 'android'                                // debug 키 비밀번호
+        }
+
+        release {
+            storeFile file('/home/oem/release-key.jks')         // release 키스토어 경로
+            storePassword 'your_keystore_password'              // release 키스토어 비밀번호
+            keyAlias 'your_key_alias'                           // release 키 별칭
+            keyPassword 'your_key_password'                     // release 키 비밀번호
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug  // debug 빌드에 debug 서명 사용
+            debuggable true                     // 디버그 모드 활성화
+            manifestPlaceholders = [
+                    kakaoAppKey: project.KAKAO_NATIVE_APP_KEY,
+                    applicationName: "android.app.Application"  // 추가된 값
+            ]
+        }
+
+        release {
+            signingConfig signingConfigs.release  // release 빌드에 release 서명 사용
+            minifyEnabled true                   // 코드 난독화 활성화
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            manifestPlaceholders = [
+                    kakaoAppKey: project.KAKAO_NATIVE_APP_KEY,
+                    applicationName: "android.app.Application"  // 추가된 값
+            ]
+        }
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.example.flutter_ddd_test"
@@ -50,15 +105,20 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+
+        manifestPlaceholders = [
+            kakaoAppKey: project.KAKAO_NATIVE_APP_KEY,
+            applicationName: "android.app.Application"  // 수정
+        ]
     }
 
-    buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug
-        }
-    }
+//    buildTypes {
+//        release {
+//            // TODO: Add your own signing config for the release build.
+//            // Signing with the debug keys for now, so `flutter run --release` works.
+//            signingConfig signingConfigs.debug
+//        }
+//    }
 }
 
 flutter {

@@ -1,47 +1,51 @@
-import 'package:flutter/foundation.dart';
-
+import 'package:flutter/material.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
-
-import '../../domain/usecases/login_usecase.dart';
+import '../../infrastructure/data_sources/kakao_auth_remote_data_source.dart';
 
 class KakaoAuthProvider extends ChangeNotifier {
-  final LoginUseCase loginUseCase;
-  // final LogoutUseCase logoutUseCase;
-  // final FetchUserInfoUseCase fetchUserInfoUseCase;
+  final KakaoAuthRemoteDataSource kakaoAuthRemoteDataSource;
 
   bool _isLoggedIn = false;
-  User? _user;
-
   bool get isLoggedIn => _isLoggedIn;
-  User? get user => _user;
 
-  KakaoAuthProvider({
-    required this.loginUseCase,
-    // required this.logoutUseCase,
-    // required this.fetchUserInfoUseCase,
-  });
+  KakaoAuthProvider({required this.kakaoAuthRemoteDataSource});
 
-  Future<void> login() async {
+  // 카카오 로그인 메서드
+  Future<void> loginWithKakao() async {
     try {
-      await loginUseCase.execute();
+      final userId = await kakaoAuthRemoteDataSource.loginWithKakao('');
+      print('로그인 성공, 사용자 ID: $userId');
       _isLoggedIn = true;
-      // _user = await fetchUserInfoUseCase.execute();
       notifyListeners();
-    } catch (e) {
-      _isLoggedIn = false;
-      _user = null;
-      throw Exception("Login failed: $e");
+    } catch (error) {
+      print('로그인 실패: $error');
+      throw Exception('Failed to login with Kakao');
     }
   }
 
-  // Future<void> logout() async {
-  //   try {
-  //     await logoutUseCase.execute();
-  //     _isLoggedIn = false;
-  //     _user = null;
-  //     notifyListeners();
-  //   } catch (e) {
-  //     throw Exception("Logout failed: $e");
-  //   }
-  // }
+  // 카카오 로그아웃 메서드
+  Future<void> logoutFromKakao() async {
+    try {
+      await kakaoAuthRemoteDataSource.logoutFromKakao('');
+      print('로그아웃 성공');
+      _isLoggedIn = false;
+      notifyListeners();
+    } catch (error) {
+      print('로그아웃 실패: $error');
+      throw Exception('Failed to logout from Kakao');
+    }
+  }
+
+  // 사용자 정보 가져오기 (예: 사용자 닉네임)
+  Future<String> fetchUserInfo() async {
+    try {
+      final user = await UserApi.instance.me();
+      final nickname = user.kakaoAccount?.profile?.nickname ?? 'Unknown';
+      print('사용자 정보: $nickname');
+      return nickname;
+    } catch (error) {
+      print('사용자 정보 가져오기 실패: $error');
+      throw Exception('Failed to fetch user info');
+    }
+  }
 }

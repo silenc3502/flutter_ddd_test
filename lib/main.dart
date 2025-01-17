@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'board/board_module.dart';
+import 'home/home_module.dart';
 import 'home/presentation/ui/home_page.dart';
 
 void main() async {
@@ -12,7 +13,13 @@ void main() async {
   // .env 파일 로드
   await dotenv.load();
 
-  // await KakaoSdk.init(nativeAppKey: 'YOUR_NATIVE_APP_KEY');
+  String kakaoNativeAppKey = dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '';
+  String kakaoJavaScriptAppKey = dotenv.env['KAKAO_JAVASCRIPT_APP_KEY'] ?? '';
+
+  KakaoSdk.init(
+    nativeAppKey: kakaoNativeAppKey,
+    javaScriptAppKey: kakaoJavaScriptAppKey,
+  );
 
   runApp(MyApp());
 }
@@ -25,7 +32,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.deepPurple,
       ),
-      home: HomePage(), // Use HomePage as the starting page
+      home: HomeModule.provideHomePage(), // HomePage를 모듈로 관리
     );
   }
 }

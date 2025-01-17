@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
-import 'presentation/ui/kakao_login_page.dart';
-import 'infrastructure/data_sources/kakao_auth_remote_data_source.dart';
-import 'presentation/providers/kakao_auth_providers.dart';
+import '../kakao_authentication/presentation/providers/kakao_auth_providers.dart';
+import '../kakao_authentication/infrastructure/data_sources/kakao_auth_remote_data_source.dart';
+import 'presentation/ui/home_page.dart';
 
-class KakaoAuthModule {
-  static Widget provideKakaoLoginPage() {
+class HomeModule {
+  static Widget provideHomePage() {
     return MultiProvider(
       providers: [
         Provider<KakaoAuthRemoteDataSource>(
@@ -19,7 +18,7 @@ class KakaoAuthModule {
           ),
         ),
       ],
-      child: KakaoLoginPage(),
+      child: HomePage(),
     );
   }
 }

@@ -1,50 +1,39 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 
 class KakaoAuthRemoteDataSource {
-  final String baseUrl;
-
-  KakaoAuthRemoteDataSource(this.baseUrl);
-
+  // 카카오 로그인 메서드 (카카오톡 또는 카카오계정 로그인)
   Future<String> loginWithKakao(String authorizationCode) async {
-    print('Requesting login with Kakao from: $baseUrl/kakao/login?code=$authorizationCode');
+    try {
+      if (await isKakaoTalkInstalled()) {
+        // 카카오톡으로 로그인
+        await UserApi.instance.loginWithKakaoTalk();
+        print('카카오톡으로 로그인 성공');
+      } else {
+        // 카카오계정으로 로그인
+        await UserApi.instance.loginWithKakaoAccount();
+        print('카카오계정으로 로그인 성공');
+      }
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/kakao/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'authorizationCode': authorizationCode}),
-    );
+      // 로그인 성공 후 사용자 정보 가져오기
+      final user = await UserApi.instance.me();
+      print('사용자 정보: ${user.id}, ${user.kakaoAccount?.profile?.nickname}');
 
-    print('Response status: ${response.statusCode}');
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      print('Response data: $data');
-
-      // 예시로 토큰을 응답에서 추출한다고 가정
-      String accessToken = data['accessToken'] ?? '';
-      return accessToken;
-    } else {
-      print('Error: Failed to authenticate with Kakao');
-      throw Exception('Failed to authenticate with Kakao');
+      // 사용자 ID 반환
+      return user.id.toString();
+    } catch (error) {
+      print('로그인 실패: $error');
+      throw Exception('Failed to login with Kakao');
     }
   }
 
+  // 카카오 로그아웃 메서드
   Future<void> logoutFromKakao(String accessToken) async {
-    print('Logging out from Kakao with token: $accessToken');
-
-    final response = await http.post(
-      Uri.parse('$baseUrl/kakao/logout'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken', // 인증 헤더에 access token 포함
-      },
-    );
-
-    print('Response status: ${response.statusCode}');
-    if (response.statusCode == 200) {
-      print('Successfully logged out from Kakao');
-    } else {
-      print('Error: Failed to logout from Kakao');
+    try {
+      // 카카오톡 로그아웃
+      await UserApi.instance.logout();
+      print('카카오톡에서 로그아웃 성공');
+    } catch (error) {
+      print('로그아웃 실패: $error');
       throw Exception('Failed to logout from Kakao');
     }
   }
