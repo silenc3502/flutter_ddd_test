@@ -47,96 +47,109 @@ class _BoardListPageState extends State<BoardListPage> {
               return Center(child: Text(boardProvider.message));
             }
 
-            return SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ListView section
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
+            // Ensure there are at least 6 items to fill the space
+            List<dynamic> boards = List.from(boardProvider.boards);
+            while (boards.length < 6) {
+              boards.add(null);  // Add null or any placeholder to ensure 6 items
+            }
+
+            return Column(
+              children: [
+                // ListView section
+                Expanded(  // Use Expanded to fill the available space dynamically
+                  child: SingleChildScrollView(
                     child: Column(
-                      children: List.generate(boardProvider.boards.length, (index) {
-                        final board = boardProvider.boards[index];
-                        return Card(
-                          elevation: 5,
-                          margin: EdgeInsets.symmetric(vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  board.title,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.deepPurple,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            children: List.generate(boards.length, (index) {
+                              final board = boards[index];
+                              if (board == null) {
+                                return SizedBox(height: 20);  // Placeholder for missing items
+                              }
+                              return Card(
+                                elevation: 5,
+                                margin: EdgeInsets.symmetric(vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        board.title,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.deepPurple,
+                                        ),
+                                      ),
+                                      Text(
+                                        board.content,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black87,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            board.nickname.isEmpty ? '익명' : board.nickname,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                          Text(
+                                            board.createDate,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                SizedBox(height: 4.5), // This can be adjusted as needed
-                                Text(
-                                  board.content,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black87,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                SizedBox(height: 4.5), // This can be adjusted as needed
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      board.nickname.isEmpty ? '익명' : board.nickname,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                    Text(
-                                      board.createDate,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                              );
+                            }),
                           ),
-                        );
-                      }),
+                        ),
+                      ],
                     ),
                   ),
-                  // Pagination section
-                  if (boardProvider.totalPages > 0)
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (boardProvider.currentPage > 1)
-                            _buildPageButton('Prev', boardProvider.currentPage - 1),
-                          ...List.generate(boardProvider.totalPages, (index) {
-                            int pageNum = index + 1;
-                            return _buildPageButton(
-                              '$pageNum',
-                              pageNum,
-                              isCurrentPage: pageNum == boardProvider.currentPage,
-                            );
-                          }),
-                          if (boardProvider.currentPage < boardProvider.totalPages)
-                            _buildPageButton('Next', boardProvider.currentPage + 1),
-                        ],
-                      ),
+                ),
+                // Pagination section at the bottom
+                if (boardProvider.totalPages > 0)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (boardProvider.currentPage > 1)
+                          _buildPageButton('Prev', boardProvider.currentPage - 1),
+                        ...List.generate(boardProvider.totalPages, (index) {
+                          int pageNum = index + 1;
+                          return _buildPageButton(
+                            '$pageNum',
+                            pageNum,
+                            isCurrentPage: pageNum == boardProvider.currentPage,
+                          );
+                        }),
+                        if (boardProvider.currentPage < boardProvider.totalPages)
+                          _buildPageButton('Next', boardProvider.currentPage + 1),
+                      ],
                     ),
-                ],
-              ),
+                  ),
+              ],
             );
           },
         ),
