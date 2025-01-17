@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'board/board_module.dart';
+import 'home/presentation/ui/home_page.dart';
 
 void main() async {
   // .env 파일 로드
@@ -16,7 +17,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter App',
-      home: BoardModule.provideBoardListPage(), // BoardModule을 통해 의존성 주입된 페이지 제공
+      theme: ThemeData(
+        primarySwatch: Colors.deepPurple,
+      ),
+      home: HomePage(), // Use HomePage as the starting page
     );
   }
 }
