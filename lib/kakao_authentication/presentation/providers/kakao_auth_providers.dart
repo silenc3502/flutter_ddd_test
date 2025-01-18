@@ -1,51 +1,95 @@
 import 'package:flutter/material.dart';
-import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
-import '../../infrastructure/data_sources/kakao_auth_remote_data_source.dart';
+import '../../domain/usecases/fetch_user_info_usecase.dart';
+import '../../domain/usecases/login_usecase.dart';
+import '../../domain/usecases/logout_usecase.dart';
+import '../../domain/usecases/request_user_token_usecase.dart';
 
-class KakaoAuthProvider extends ChangeNotifier {
-  final KakaoAuthRemoteDataSource kakaoAuthRemoteDataSource;
+class KakaoAuthProvider with ChangeNotifier {
+  final LoginUseCase loginUseCase;
+  final LogoutUseCase logoutUseCase;
+  final FetchUserInfoUseCase fetchUserInfoUseCase;
+  final RequestUserTokenUseCase requestUserTokenUseCase;
 
+  String? _accessToken;
+  String? _userToken;
   bool _isLoggedIn = false;
+  bool _isLoading = false;
+  String _message = '';
+
   bool get isLoggedIn => _isLoggedIn;
+  bool get isLoading => _isLoading;
+  String get message => _message;
 
-  KakaoAuthProvider({required this.kakaoAuthRemoteDataSource});
+  KakaoAuthProvider({
+    required this.loginUseCase,
+    required this.logoutUseCase,
+    required this.fetchUserInfoUseCase,
+    required this.requestUserTokenUseCase,
+  });
 
-  // 카카오 로그인 메서드
-  Future<void> loginWithKakao() async {
+  Future<void> login() async {
+    _isLoading = true;
+    _message = '';
+    notifyListeners();
+
     try {
-      final userId = await kakaoAuthRemoteDataSource.loginWithKakao('');
-      print('로그인 성공, 사용자 ID: $userId');
+      // UseCase를 호출하여 로그인 처리
+      print("Calling loginUseCase.execute()");
+      _accessToken = await loginUseCase.execute();
+      print("AccessToken obtained: $_accessToken");
+
+      // 카카오 accessToken을 사용해 사용자 정보를 요청
+      print("Calling fetchUserInfoUseCase.execute()");
+      final userInfo = await fetchUserInfoUseCase.execute();
+      print("User Info fetched: $userInfo");
+
+      final email = userInfo.kakaoAccount?.email;
+      final nickname = userInfo.kakaoAccount?.profile?.nickname;
+
+      print("User email: $email, User nickname: $nickname");
+
+      _userToken = await requestUserTokenUseCase.execute(
+          _accessToken!, email!, nickname!);
+
+      print("User Token obtained: $_userToken");
+
       _isLoggedIn = true;
-      notifyListeners();
-    } catch (error) {
-      print('로그인 실패: $error');
-      throw Exception('Failed to login with Kakao');
-    }
-  }
-
-  // 카카오 로그아웃 메서드
-  Future<void> logoutFromKakao() async {
-    try {
-      await kakaoAuthRemoteDataSource.logoutFromKakao('');
-      print('로그아웃 성공');
+      _message = '로그인 성공';
+      print("Login successful");
+    } catch (e) {
       _isLoggedIn = false;
-      notifyListeners();
-    } catch (error) {
-      print('로그아웃 실패: $error');
-      throw Exception('Failed to logout from Kakao');
+      _message = '로그인 실패: $e';
     }
+
+    _isLoading = false;
+    notifyListeners();
   }
 
-  // 사용자 정보 가져오기 (예: 사용자 닉네임)
-  Future<String> fetchUserInfo() async {
+  Future<void> logoutFromKakao() async {
+    _isLoading = true;
+    _message = '';
+    notifyListeners();
+
     try {
-      final user = await UserApi.instance.me();
-      final nickname = user.kakaoAccount?.profile?.nickname ?? 'Unknown';
-      print('사용자 정보: $nickname');
-      return nickname;
-    } catch (error) {
-      print('사용자 정보 가져오기 실패: $error');
-      throw Exception('Failed to fetch user info');
+      await logoutUseCase.execute();
+
+      _isLoggedIn = false;
+      _accessToken = null;
+      _userToken = null;
+      _message = '로그아웃 성공';
+    } catch (e) {
+      _message = '로그아웃 실패: $e';
     }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<String> _authenticateWithServer(String accessToken) async {
+    // Django 서버에 AccessToken 전달 후 User Token 반환
+    return Future.delayed(
+      Duration(seconds: 1),
+      () => 'dummy_user_token_based_on_$accessToken',
+    );
   }
 }

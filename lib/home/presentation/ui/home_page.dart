@@ -35,6 +35,10 @@ class HomePage extends StatelessWidget {
             onPressed: () {
               if (kakaoAuthProvider.isLoggedIn) {
                 kakaoAuthProvider.logoutFromKakao();
+                // Optionally show a logout message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Logged out successfully')),
+                );
               } else {
                 Navigator.push(
                   context,
@@ -49,7 +53,12 @@ class HomePage extends StatelessWidget {
         ],
       ),
       body: Center(
-        child: Text('Welcome to Home Page!'),
+        child: Text(
+          kakaoAuthProvider.isLoggedIn
+              ? 'Welcome, ${kakaoAuthProvider.message}' // Example welcome message with user info
+              : 'Welcome to Home Page! Please login to continue.',
+          style: TextStyle(fontSize: 18),
+        ),
       ),
     );
   }

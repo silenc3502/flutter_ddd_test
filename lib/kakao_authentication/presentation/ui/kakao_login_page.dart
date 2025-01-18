@@ -6,30 +6,56 @@ class KakaoLoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Kakao Login'),
-      ),
+      appBar: AppBar(title: Text('Kakao Login')),
       body: Consumer<KakaoAuthProvider>(
         builder: (context, provider, child) {
+          if (provider.isLoading) {
+            return Center(child: CircularProgressIndicator());
+          }
+
           return Center(
             child: provider.isLoggedIn
                 ? Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('로그인 성공!'),
+                      Text(
+                        '로그인 성공!',
+                        style: TextStyle(fontSize: 20),
+                      ),
+                      SizedBox(height: 16),
                       ElevatedButton(
-                        onPressed: () {
-                          provider.logoutFromKakao();
-                        },
+                        onPressed: provider.isLoading
+                            ? null
+                            : () => provider.logoutFromKakao(),
                         child: Text('Logout'),
                       ),
+                      if (provider.message.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            provider.message,
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
                     ],
                   )
-                : ElevatedButton(
-                    onPressed: () {
-                      provider.loginWithKakao();
-                    },
-                    child: Text('Login with Kakao'),
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed:
+                            provider.isLoading ? null : () => provider.login(),
+                        child: Text('Login with Kakao'),
+                      ),
+                      if (provider.message.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            provider.message,
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                    ],
                   ),
           );
         },
