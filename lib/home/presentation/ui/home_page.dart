@@ -4,6 +4,7 @@ import '../../../board/board_module.dart';
 import '../../../common_ui/app_bar_action.dart';
 import '../../../kakao_authentication/kakao_auth_module.dart';
 import '../../../kakao_authentication/presentation/providers/kakao_auth_providers.dart';
+import '../../../simple_chat/presentation/ui/simple_chat_page.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -48,6 +49,19 @@ class HomePage extends StatelessWidget {
                   ),
                 );
               }
+            },
+          ),
+          // Simple Chat 페이지로 이동하는 버튼 추가
+          AppBarAction(
+            icon: Icons.chat_bubble,
+            tooltip: 'Go to Simple Chat',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SimpleChatPage(),  // SimpleChatPage로 이동
+                ),
+              );
             },
           ),
         ],
