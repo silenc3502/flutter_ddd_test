@@ -1,87 +1,72 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ddd_test/simple_chat/presentation/providers/simple_chat_provider.dart';
 import 'package:provider/provider.dart';
+import '../providers/simple_chat_provider.dart';
 
-import '../../../kakao_authentication/presentation/providers/kakao_auth_providers.dart';
+class SimpleChatPage extends StatefulWidget {
+  @override
+  _SimpleChatPageState createState() => _SimpleChatPageState();
+}
 
-class SimpleChatPage extends StatelessWidget {
-  final TextEditingController _controller = TextEditingController();
+class _SimpleChatPageState extends State<SimpleChatPage> {
+  final TextEditingController _messageController = TextEditingController();
+  String? _response;
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<SimpleChatProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Simple Chat'),
-        actions: [
-          Consumer<KakaoAuthProvider>(
-            builder: (context, authProvider, child) {
-              return authProvider.isLoggedIn
-                  ? IconButton(
-                icon: Icon(Icons.exit_to_app),
-                onPressed: () async {
-                  await authProvider.logoutFromKakao();
-                  // 로그아웃 후 로그인 페이지로 이동
-                  Navigator.pushReplacementNamed(context, '/kakao-login');
-                },
-              )
-                  : Container(); // 로그인 안 됐을 때는 버튼 숨김
-            },
-          ),
-        ],
+        title: const Text('Simple Chat'),
       ),
-      body: Consumer<SimpleChatProvider>(
-        builder: (context, provider, child) {
-          return Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: provider.messages.length,
-                  itemBuilder: (context, index) {
-                    final message = provider.messages[index];
-                    return ListTile(
-                      title: Text(message.content),
-                      subtitle: Text(message.timestamp.toString()),
-                    );
-                  },
-                ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _messageController,
+              decoration: const InputDecoration(
+                labelText: 'Enter your message',
+                border: OutlineInputBorder(),
               ),
-              if (provider.isLoading) ...[
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: CircularProgressIndicator(),
-                ),
-              ],
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        decoration: InputDecoration(
-                          hintText: 'Type a message...',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.send),
-                      onPressed: () {
-                        final message = _controller.text;
-                        if (message.isNotEmpty) {
-                          provider.addUserMessage(message);
-                          provider.sendMessage(message, context);
-                          _controller.clear();
-                        }
-                      },
-                    ),
-                  ],
-                ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () async {
+                final message = _messageController.text.trim();
+                if (message.isNotEmpty) {
+                  try {
+                    final result = await provider.sendMessage(message);
+                    setState(() {
+                      _response = result;
+                    });
+                  } catch (e) {
+                    setState(() {
+                      _response = 'Error: $e';
+                    });
+                  }
+                }
+              },
+              child: const Text('Send'),
+            ),
+            const SizedBox(height: 24),
+            if (_response != null) ...[
+              const Text(
+                'Response:',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
+              const SizedBox(height: 8),
+              Text(_response!),
             ],
-          );
-        },
+          ],
+        ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
   }
 }

@@ -65,7 +65,7 @@ android {
 
     def isWindows = System.getProperty("os.name").toLowerCase().contains("win")
     def debugKeyStorePath = isWindows ? 'C:/Users/Playdata/.android/debug.keystore' : '/home/oem/.android/debug.keystore'
-    def releaseKeyStorePath = isWindows ? 'C:/Users/Playdata/.android/release-key.jks' : '/home/oem/release-key.jks'
+    def releaseKeyStorePath = isWindows ? 'C:/Users/Playdata/.android/release-key.jks' : '/home/oem/.android/release-key.jks'
 
     println "Debug Keystore Path: ${debugKeyStorePath}"
     println "Release Keystore Path: ${releaseKeyStorePath}"

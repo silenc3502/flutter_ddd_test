@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import '../../../board/board_module.dart';
 import '../../../common_ui/app_bar_action.dart';
 import '../../../kakao_authentication/kakao_auth_module.dart';
 import '../../../kakao_authentication/presentation/providers/kakao_auth_providers.dart';
 import '../../../simple_chat/presentation/ui/simple_chat_page.dart';
+import '../../../simple_chat/simple_chat_module.dart';
 
 class HomePage extends StatelessWidget {
+  final String apiUrl = dotenv.env['API_URL'] ?? '';
+  final String apiKey = dotenv.env['API_KEY'] ?? '';
+
   @override
   Widget build(BuildContext context) {
     final kakaoAuthProvider = Provider.of<KakaoAuthProvider>(context);
@@ -59,7 +64,8 @@ class HomePage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => SimpleChatPage(),  // SimpleChatPage로 이동
+                  builder: (context) =>
+                      SimpleChatModule.provideSimpleChatPage(apiUrl, apiKey),
                 ),
               );
             },
