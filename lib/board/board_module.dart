@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ddd_test/board/presentation/ui/board_create_page.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -40,6 +41,40 @@ class BoardModule {
         ),
       ],
       child: BoardListPage(),
+    );
+  }
+
+  // Provides the BoardCreatePage with necessary dependencies
+  static Widget provideBoardCreatePage() {
+    return MultiProvider(
+      providers: [
+        // Add common dependencies here if needed, such as BaseUrlProvider, etc.
+        ChangeNotifierProvider<BaseUrlProvider>(
+          create: (_) => BaseUrlProvider(),
+        ),
+        ProxyProvider<BaseUrlProvider, BoardRemoteDataSource>(
+          update: (_, baseUrlProvider, __) =>
+              BoardRemoteDataSource(baseUrlProvider.baseUrl),
+        ),
+        ProxyProvider<BoardRemoteDataSource, BoardRepositoryImpl>(
+          update: (_, remoteDataSource, __) =>
+              BoardRepositoryImpl(remoteDataSource),
+        ),
+        ProxyProvider<BoardRepositoryImpl, ListBoardsUseCaseImpl>(
+          update: (_, repository, __) => ListBoardsUseCaseImpl(repository),
+        ),
+        ProxyProvider<BoardRepositoryImpl, CreateBoardUseCaseImpl>(
+          update: (_, repository, __) => CreateBoardUseCaseImpl(repository),
+        ),
+        // You can pass the same BoardProvider here, if needed
+        ChangeNotifierProvider<BoardProvider>(
+          create: (context) => BoardProvider(
+            listBoardsUseCase: context.read<ListBoardsUseCaseImpl>(),
+            createBoardUseCase: context.read<CreateBoardUseCaseImpl>(),
+          ),
+        ),
+      ],
+      child: BoardCreatePage(),  // The actual page you're navigating to
     );
   }
 }

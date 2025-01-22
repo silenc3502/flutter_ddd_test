@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../common_ui/error_message.dart';
 import '../../../common_ui/loading_indicator.dart';
 import '../../../common_ui/custom_app_bar.dart'; // CustomAppBar import
+import '../../board_module.dart';
 import '../providers/board_providers.dart';
 import 'component/page_content.dart';
 import 'board_create_page.dart'; // 게시글 작성 페이지 import
@@ -80,7 +81,7 @@ class _BoardListPageState extends State<BoardListPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => BoardCreatePage(),
+                      builder: (context) => BoardModule.provideBoardCreatePage(),
                     ),
                   );
                 },
