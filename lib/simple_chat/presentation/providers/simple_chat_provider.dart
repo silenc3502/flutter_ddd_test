@@ -12,7 +12,9 @@ class SimpleChatProvider with ChangeNotifier {
   }
 
   Future<String> sendMessage(String message) async {
+    print('Sending message: $message');
     final response = await sendSimpleChatUseCase.execute(message);
+    print('Received response: $response');
     notifyListeners();
     return response;
   }

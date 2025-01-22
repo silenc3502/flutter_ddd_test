@@ -18,4 +18,9 @@ class BoardRepositoryImpl implements BoardRepository {
       throw Exception('Error fetching boards: $e');
     }
   }
+
+  @override
+  Future<Board> createBoard(String title, String content, String userToken) {
+    return remoteDataSource.createBoard(title, content, userToken);
+  }
 }

@@ -15,11 +15,13 @@ class SimpleChatRepositoryImpl implements SimpleChatRepository {
 
   @override
   Future<String> sendMessage(String message) async {
+    print('Repository sending message: $message');
     try {
       final generatedText = await remoteDataSource.fetchGeneratedText(message);
       print('Generated response: $generatedText');
       return generatedText;
     } catch (e) {
+      print('Error: $e');
       throw Exception("Failed to send message: $e");
     }
   }

@@ -2,7 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../common_ui/error_message.dart';
 import '../../../common_ui/loading_indicator.dart';
+import '../../../common_ui/custom_app_bar.dart'; // CustomAppBar import
+import '../providers/board_providers.dart';
+import 'component/page_content.dart';
+import 'package:flutter/material.dart';
+import 'board_create_page.dart'; // 게시글 작성 페이지 import
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../common_ui/error_message.dart';
+import '../../../common_ui/loading_indicator.dart';
 import '../../../common_ui/app_bar_action.dart'; // 공통 UI import
+import '../../../common_ui/custom_app_bar.dart'; // CustomAppBar import
 import '../providers/board_providers.dart';
 import 'component/page_content.dart';
 
@@ -34,30 +45,7 @@ class _BoardListPageState extends State<BoardListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Board List'),
-        backgroundColor: Colors.deepPurple,
-        elevation: 0,
-        actions: [
-          // 게시판 아이콘
-          AppBarAction(
-            icon: Icons.home,
-            tooltip: 'Home',
-            onPressed: () {
-              Navigator.pop(context); // Home으로 이동
-            },
-          ),
-          // 로그인 아이콘
-          AppBarAction(
-            icon: Icons.login,
-            tooltip: 'Login',
-            onPressed: () {
-              // Login 페이지로 이동
-            },
-          ),
-        ],
-      ),
+    return CustomAppBar(
       body: SafeArea(
         child: Consumer<BoardProvider>(
           builder: (context, boardProvider, child) {
@@ -76,6 +64,7 @@ class _BoardListPageState extends State<BoardListPage> {
           },
         ),
       ),
+      title: 'Board List',
     );
   }
 }

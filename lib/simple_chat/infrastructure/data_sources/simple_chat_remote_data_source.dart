@@ -18,9 +18,17 @@ class SimpleChatRemoteDataSource {
       body: json.encode(body),
     );
 
+    print('API response status: ${response.statusCode}');
+    print('API response body: ${response.body}');
+
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      return data['generated_text'] ?? ''; // Ensure 'generated_text' is returned
+      if (data.isNotEmpty && data[0]['generated_text'] != null) {
+        // print('Generated text from API: ${data[0]['generated_text']}');
+        return data[0]['generated_text'];
+      } else {
+        throw Exception('Generated text is missing in the response');
+      }
     } else {
       throw Exception('Failed to get response from LLM: ${response.statusCode}');
     }

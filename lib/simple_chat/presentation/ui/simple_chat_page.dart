@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../domain/usecases/send_simple_chat_usecase_impl.dart';
 import '../providers/simple_chat_provider.dart';
 
 class SimpleChatPage extends StatefulWidget {
@@ -19,7 +20,7 @@ class _SimpleChatPageState extends State<SimpleChatPage> {
       appBar: AppBar(
         title: const Text('Simple Chat'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(  // Add this widget to make the body scrollable
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [

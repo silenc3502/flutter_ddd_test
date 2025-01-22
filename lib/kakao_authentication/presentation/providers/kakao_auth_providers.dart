@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../domain/usecases/fetch_user_info_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
@@ -9,6 +10,8 @@ class KakaoAuthProvider with ChangeNotifier {
   final LogoutUseCase logoutUseCase;
   final FetchUserInfoUseCase fetchUserInfoUseCase;
   final RequestUserTokenUseCase requestUserTokenUseCase;
+
+  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   String? _accessToken;
   String? _userToken;
@@ -53,6 +56,8 @@ class KakaoAuthProvider with ChangeNotifier {
 
       print("User Token obtained: $_userToken");
 
+      await _secureStorage.write(key: 'userToken', value: _userToken);
+
       _isLoggedIn = true;
       _message = '로그인 성공';
       print("Login successful");
@@ -73,6 +78,8 @@ class KakaoAuthProvider with ChangeNotifier {
     try {
       await logoutUseCase.execute();
 
+      await _secureStorage.delete(key: 'userToken');
+
       _isLoggedIn = false;
       _accessToken = null;
       _userToken = null;
@@ -83,6 +90,17 @@ class KakaoAuthProvider with ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> checkUserToken() async {
+    // 앱 시작 시 Secure Storage에서 User Token 불러오기
+    _userToken = await _secureStorage.read(key: 'userToken');
+
+    if (_userToken != null) {
+      _isLoggedIn = true;
+      _message = 'User is already logged in';
+      notifyListeners();
+    }
   }
 
   Future<String> _authenticateWithServer(String accessToken) async {

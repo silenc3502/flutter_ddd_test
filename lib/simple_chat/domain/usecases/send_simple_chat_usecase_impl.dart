@@ -8,6 +8,7 @@ class SendSimpleChatUseCaseImpl implements SendSimpleChatUseCase {
 
   @override
   Future<String> execute(String message) {
+    print('Executing use case with message: $message');
     return repository.sendMessage(message);
   }
 }

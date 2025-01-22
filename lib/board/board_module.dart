@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../config/base_url_provider.dart';
+import 'domain/usecases/create_board_usecase_impl.dart';
 import 'presentation/ui/board_list_page.dart';
 import 'presentation/providers/board_providers.dart';
 import 'infrastructure/data_sources/board_remote_data_source.dart';
@@ -27,9 +28,14 @@ class BoardModule {
         ProxyProvider<BoardRepositoryImpl, ListBoardsUseCaseImpl>(
           update: (_, repository, __) => ListBoardsUseCaseImpl(repository),
         ),
+        // CreateBoardUseCaseImpl을 먼저 추가합니다.
+        ProxyProvider<BoardRepositoryImpl, CreateBoardUseCaseImpl>(
+          update: (_, repository, __) => CreateBoardUseCaseImpl(repository),
+        ),
         ChangeNotifierProvider<BoardProvider>(
           create: (context) => BoardProvider(
             listBoardsUseCase: context.read<ListBoardsUseCaseImpl>(),
+            createBoardUseCase: context.read<CreateBoardUseCaseImpl>(),
           ),
         ),
       ],
@@ -37,3 +43,4 @@ class BoardModule {
     );
   }
 }
+
