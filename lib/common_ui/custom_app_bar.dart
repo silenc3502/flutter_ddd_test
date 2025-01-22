@@ -19,54 +19,56 @@ class CustomAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        backgroundColor: Colors.deepPurple,
-        actions: [
-          // 게시판 아이콘
-          AppBarAction(
-            icon: Icons.list_alt,
-            tooltip: 'Board List',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BoardModule.provideBoardListPage(),
-                ),
-              );
-            },
-          ),
-          // 로그인 아이콘
-          AppBarAction(
-            icon: Icons.login, // 로그인 상태에 따라 아이콘 변경
-            tooltip: 'Login',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => KakaoAuthModule.provideKakaoLoginPage(),
-                ),
-              );
-            },
-          ),
-          // Simple Chat 페이지로 이동하는 버튼
-          AppBarAction(
-            icon: Icons.chat_bubble,
-            tooltip: 'Go to Simple Chat',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      SimpleChatModule.provideSimpleChatPage(apiUrl, apiKey),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: body,
+    return Column(
+      children: [
+        AppBar(
+          title: Text(title),
+          backgroundColor: Colors.deepPurple,
+          actions: [
+            // 게시판 아이콘
+            AppBarAction(
+              icon: Icons.list_alt,
+              tooltip: 'Board List',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BoardModule.provideBoardListPage(),
+                  ),
+                );
+              },
+            ),
+            // 로그인 아이콘
+            AppBarAction(
+              icon: Icons.login, // 로그인 상태에 따라 아이콘 변경
+              tooltip: 'Login',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => KakaoAuthModule.provideKakaoLoginPage(),
+                  ),
+                );
+              },
+            ),
+            // Simple Chat 페이지로 이동하는 버튼
+            AppBarAction(
+              icon: Icons.chat_bubble,
+              tooltip: 'Go to Simple Chat',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        SimpleChatModule.provideSimpleChatPage(apiUrl, apiKey),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+        Expanded(child: body), // body 부분을 확장하여 화면을 채움
+      ],
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../domain/usecases/send_simple_chat_usecase_impl.dart';
 import '../providers/simple_chat_provider.dart';
+import '../../../common_ui/custom_app_bar.dart'; // CustomAppBar import
 
 class SimpleChatPage extends StatefulWidget {
   @override
@@ -17,8 +18,12 @@ class _SimpleChatPageState extends State<SimpleChatPage> {
     final provider = Provider.of<SimpleChatProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Simple Chat'),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: CustomAppBar(
+          body: Container(), // CustomAppBar의 body는 비워둡니다.
+          title: 'Simple Chat',
+        ),
       ),
       body: SingleChildScrollView(  // Add this widget to make the body scrollable
         padding: const EdgeInsets.all(16.0),
