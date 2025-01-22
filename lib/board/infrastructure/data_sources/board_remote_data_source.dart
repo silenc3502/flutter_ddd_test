@@ -9,9 +9,11 @@ class BoardRemoteDataSource {
   BoardRemoteDataSource(this.baseUrl);
 
   Future<BoardListResponse> listBoards(int page, int perPage) async {
-    print('Requesting boards from: $baseUrl/board/list?page=$page&perPage=$perPage');
+    print(
+        'Requesting boards from: $baseUrl/board/list?page=$page&perPage=$perPage');
 
-    final response = await http.get(Uri.parse('$baseUrl/board/list?page=$page&perPage=$perPage'));
+    final response = await http
+        .get(Uri.parse('$baseUrl/board/list?page=$page&perPage=$perPage'));
 
     print('Response status: ${response.statusCode}');
     if (response.statusCode == 200) {
@@ -20,12 +22,14 @@ class BoardRemoteDataSource {
 
       List<Board> boards = (data['dataList'] as List)
           .map((item) => Board(
-        id: item['boardId'] ?? 0, // boardId 사용
-        title: item['title'] ?? 'Untitled', // 제목 없으면 'Untitled'
-        content: '', // content 없음, 빈 문자열
-        nickname: item['nickname'] ?? 'Anonymous', // 닉네임 없으면 'Anonymous'
-        createDate: item['createDate'] ?? 'Unknown', // createDate 없음, 'Unknown'
-      ))
+                id: item['boardId'] ?? 0, // boardId 사용
+                title: item['title'] ?? 'Untitled', // 제목 없으면 'Untitled'
+                content: '', // content 없음, 빈 문자열
+                nickname:
+                    item['nickname'] ?? 'Anonymous', // 닉네임 없으면 'Anonymous'
+                createDate:
+                    item['createDate'] ?? 'Unknown', // createDate 없음, 'Unknown'
+              ))
           .toList();
 
       // totalItems와 totalPages를 int로 변환
@@ -43,7 +47,10 @@ class BoardRemoteDataSource {
     }
   }
 
-  Future<Board> createBoard(String title, String content, String userToken) async {
+  Future<Board> createBoard(
+      String title, String content, String userToken) async {
+    print(
+        '[BoardRemoteDataSource] Sending request to create board with title: $title, content: $content, userToken: $userToken');
     final url = Uri.parse('$baseUrl/board/create');
     final response = await http.post(url, body: {
       'title': title,
@@ -51,16 +58,22 @@ class BoardRemoteDataSource {
       'userToken': userToken,
     });
 
+    print('[BoardRemoteDataSource] Response status: ${response.statusCode}');
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
+      print('[BoardRemoteDataSource] Board created: $data');
+
+      // Null 처리 및 기본값 설정
       return Board(
-        id: data['boardId'],
-        title: data['title'],
-        content: data['content'],
-        nickname: data['nickname'],
-        createDate: data['createDate'],
+        id: data['data']['boardId'] ?? 0, // null일 경우 0으로 처리
+        title: data['data']['title'] ?? 'Untitled', // null일 경우 기본값 설정
+        content: data['data']['content'] ?? '',
+        nickname:
+            data['data']['writerNickname'] ?? 'Anonymous', // null일 경우 기본값 설정
+        createDate: data['data']['createDate'] ?? 'Unknown', // null일 경우 기본값 설정
       );
     } else {
+      print('[BoardRemoteDataSource] Error: Failed to create board');
       throw Exception('Failed to create board');
     }
   }

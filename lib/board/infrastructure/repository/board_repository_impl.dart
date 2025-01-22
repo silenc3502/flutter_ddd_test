@@ -20,7 +20,18 @@ class BoardRepositoryImpl implements BoardRepository {
   }
 
   @override
-  Future<Board> createBoard(String title, String content, String userToken) {
-    return remoteDataSource.createBoard(title, content, userToken);
+  Future<Board> createBoard(
+      String title, String content, String userToken) async {
+    print(
+        '[BoardRepositoryImpl] Creating board with title: $title, content: $content, userToken: $userToken');
+    try {
+      final board =
+          await remoteDataSource.createBoard(title, content, userToken);
+      print('[BoardRepositoryImpl] Board created successfully: $board');
+      return board;
+    } catch (e) {
+      print('[BoardRepositoryImpl] Error: $e');
+      throw Exception('Failed to create board');
+    }
   }
 }

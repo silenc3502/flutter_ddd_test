@@ -75,7 +75,7 @@ class KakaoAuthRemoteDataSource {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         print('Server response data: $data');
-        return data['user_token'] ?? ''; // 실제 토큰 필드명에 맞게 수정
+        return data['userToken'] ?? ''; // 실제 토큰 필드명에 맞게 수정
       } else {
         print(
             'Error: Failed to request user token, status code: ${response.statusCode}');
