@@ -24,7 +24,8 @@ class _BoardModifyPageState extends State<BoardModifyPage> {
     final selectedBoard = boardProvider.getBoardById(widget.boardId);
 
     _titleController = TextEditingController(text: selectedBoard?.title ?? '');
-    _contentController = TextEditingController(text: selectedBoard?.content ?? '');
+    _contentController =
+        TextEditingController(text: selectedBoard?.content ?? '');
   }
 
   @override

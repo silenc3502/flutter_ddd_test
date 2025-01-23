@@ -38,32 +38,42 @@ class BoardRepositoryImpl implements BoardRepository {
   @override
   Future<Board?> readBoard(int boardId) async {
     try {
-      print('Attempting to read board with ID: $boardId');  // boardId 출력
+      print('Attempting to read board with ID: $boardId'); // boardId 출력
 
       // 데이터 받아오기
       final board = await remoteDataSource.fetchBoard(boardId);
 
       // 데이터를 출력
       if (board != null) {
-        print('readBoard() Board data fetched: ${board.toJson()}');  // Board 객체의 데이터를 JSON 형태로 출력
+        print(
+            'readBoard() Board data fetched: ${board.toJson()}'); // Board 객체의 데이터를 JSON 형태로 출력
       } else {
         print('No board found for ID: $boardId');
       }
 
-      return board;  // 데이터 반환
+      return board; // 데이터 반환
     } catch (e) {
-      print('Error fetching board from repository: $e');  // 예외 발생 시 출력
+      print('Error fetching board from repository: $e'); // 예외 발생 시 출력
       return null;
     }
   }
 
   @override
-  Future<Board> updateBoard(int id, String title, String content, String userToken) {
-    throw UnimplementedError();
-  }
+  Future<Board> updateBoard(
+      int boardId, String title, String content, String userToken) async {
+    try {
+      print('Attempting to update board with ID: $boardId');
+      print('New title: $title, content: $content, userToken: $userToken');
 
-  // @override
-  // Future<Board> updateBoard(int id, String title, String content, String userToken) async {
-  //   await remoteDataSource.updateBoard(id, title, content, userToken);
-  // }
+      // 데이터 업데이트
+      final updatedBoard = await remoteDataSource.updateBoard(
+          boardId, title, content, userToken);
+
+      print('Board updated successfully: ${updatedBoard.toJson()}');
+      return updatedBoard;
+    } catch (e) {
+      print('Error updating board: $e');
+      rethrow; // 상위 호출자에게 예외 전달
+    }
+  }
 }

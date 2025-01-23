@@ -3,8 +3,9 @@ import 'package:flutter_ddd_test/board/presentation/ui/board_modify_page.dart';
 import 'package:provider/provider.dart';
 import '../config/base_url_provider.dart';
 import 'domain/usecases/create_board_usecase_impl.dart';
-import 'domain/usecases/read_board_usecase_impl.dart';  // 추가
+import 'domain/usecases/read_board_usecase_impl.dart'; // 추가
 import 'domain/usecases/list_boards_usecase_impl.dart';
+import 'domain/usecases/update_board_usecase_impl.dart';
 import 'presentation/ui/board_create_page.dart';
 import 'presentation/ui/board_read_page.dart';
 import 'presentation/ui/board_list_page.dart';
@@ -33,14 +34,19 @@ class BoardModule {
         ProxyProvider<BoardRepositoryImpl, CreateBoardUseCaseImpl>(
           update: (_, repository, __) => CreateBoardUseCaseImpl(repository),
         ),
-        ProxyProvider<BoardRepositoryImpl, ReadBoardUseCaseImpl>(  // 추가
+        ProxyProvider<BoardRepositoryImpl, ReadBoardUseCaseImpl>(
+          // 추가
           update: (_, repository, __) => ReadBoardUseCaseImpl(repository),
+        ),
+        ProxyProvider<BoardRepositoryImpl, UpdateBoardUseCaseImpl>(
+          update: (_, repository, __) => UpdateBoardUseCaseImpl(repository),
         ),
         ChangeNotifierProvider<BoardProvider>(
           create: (context) => BoardProvider(
             listBoardsUseCase: context.read<ListBoardsUseCaseImpl>(),
             createBoardUseCase: context.read<CreateBoardUseCaseImpl>(),
-            readBoardUseCase: context.read<ReadBoardUseCaseImpl>(),  // 직접 전달
+            readBoardUseCase: context.read<ReadBoardUseCaseImpl>(),
+            updateBoardUseCase: context.read<UpdateBoardUseCaseImpl>(),
           ),
         ),
       ],
@@ -72,8 +78,12 @@ class BoardModule {
           create: (context) => BoardProvider(
             listBoardsUseCase: context.read<ListBoardsUseCaseImpl>(),
             createBoardUseCase: context.read<CreateBoardUseCaseImpl>(),
-            readBoardUseCase: context.read<ReadBoardUseCaseImpl>(),  // 직접 전달
+            readBoardUseCase: context.read<ReadBoardUseCaseImpl>(),
+            updateBoardUseCase: context.read<UpdateBoardUseCaseImpl>(),
           ),
+        ),
+        ProxyProvider<BoardRepositoryImpl, UpdateBoardUseCaseImpl>(
+          update: (_, repository, __) => UpdateBoardUseCaseImpl(repository),
         ),
       ],
       child: BoardCreatePage(),
@@ -103,6 +113,9 @@ class BoardModule {
         ProxyProvider<BoardRepositoryImpl, CreateBoardUseCaseImpl>(
           update: (_, repository, __) => CreateBoardUseCaseImpl(repository),
         ),
+        ProxyProvider<BoardRepositoryImpl, UpdateBoardUseCaseImpl>(
+          update: (_, repository, __) => UpdateBoardUseCaseImpl(repository),
+        ),
       ],
       child: Builder(
         builder: (context) {
@@ -111,6 +124,7 @@ class BoardModule {
               listBoardsUseCase: context.read<ListBoardsUseCaseImpl>(),
               createBoardUseCase: context.read<CreateBoardUseCaseImpl>(),
               readBoardUseCase: context.read<ReadBoardUseCaseImpl>(),
+              updateBoardUseCase: context.read<UpdateBoardUseCaseImpl>(),
             )..readBoard(boardId),
             child: BoardReadPage(),
           );
@@ -142,6 +156,9 @@ class BoardModule {
         ProxyProvider<BoardRepositoryImpl, CreateBoardUseCaseImpl>(
           update: (_, repository, __) => CreateBoardUseCaseImpl(repository),
         ),
+        ProxyProvider<BoardRepositoryImpl, UpdateBoardUseCaseImpl>(
+          update: (_, repository, __) => UpdateBoardUseCaseImpl(repository),
+        ),
       ],
       child: Builder(
         builder: (context) {
@@ -150,8 +167,9 @@ class BoardModule {
               listBoardsUseCase: context.read<ListBoardsUseCaseImpl>(),
               createBoardUseCase: context.read<CreateBoardUseCaseImpl>(),
               readBoardUseCase: context.read<ReadBoardUseCaseImpl>(),
+              updateBoardUseCase: context.read<UpdateBoardUseCaseImpl>(),
             )..readBoard(boardId), // 로딩이나 초기화할 작업 수행
-            child: BoardModifyPage(boardId: boardId),  // BoardModifyPage로 이동
+            child: BoardModifyPage(boardId: boardId), // BoardModifyPage로 이동
           );
         },
       ),

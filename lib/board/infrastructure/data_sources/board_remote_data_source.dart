@@ -80,24 +80,26 @@ class BoardRemoteDataSource {
 
   Future<Board?> fetchBoard(int boardId) async {
     try {
-      print('Fetching board with ID: $boardId');  // 요청하는 boardId 출력
-      final response = await http.get(Uri.parse('$baseUrl/board/read/$boardId'));
+      print('Fetching board with ID: $boardId'); // 요청하는 boardId 출력
+      final response =
+          await http.get(Uri.parse('$baseUrl/board/read/$boardId'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('Board data fetched successfully: $data');  // 성공적인 응답 출력
+        print('Board data fetched successfully: $data'); // 성공적인 응답 출력
         return Board.fromJson(data);
       } else {
-        print('Failed to load board: ${response.statusCode}');  // 실패 시 상태 코드 출력
+        print('Failed to load board: ${response.statusCode}'); // 실패 시 상태 코드 출력
         return null;
       }
     } catch (e) {
-      print('Error fetching board: $e');  // 예외 발생 시 출력
+      print('Error fetching board: $e'); // 예외 발생 시 출력
       return null;
     }
   }
 
-  Future<void> updateBoard(int boardId, String title, String content, String userToken) async {
+  Future<Board> updateBoard(
+      int boardId, String title, String content, String userToken) async {
     final url = Uri.parse('$baseUrl/board/modify/$boardId');
     final response = await http.post(url, body: {
       'title': title,
@@ -105,7 +107,21 @@ class BoardRemoteDataSource {
       'userToken': userToken,
     });
 
-    if (response.statusCode != 200) {
+    if (response.statusCode == 200) {
+      // 서버 응답을 파싱하여 수정된 게시글 반환
+      final data = json.decode(response.body);
+      print('Board updated successfully: $data'); // 성공 로그
+
+      return Board(
+        id: data['data']['boardId'] ?? boardId, // boardId가 응답에 없으면 기존 값 사용
+        title: data['data']['title'] ?? title, // 응답 없으면 기존 값 사용
+        content: data['data']['content'] ?? content,
+        nickname: data['data']['writerNickname'] ?? 'Anonymous',
+        createDate: data['data']['createDate'] ?? 'Unknown',
+      );
+    } else {
+      // 상태 코드가 200이 아닌 경우 예외 처리
+      print('Failed to update the board: ${response.body}');
       throw Exception('Failed to update the board: ${response.body}');
     }
   }

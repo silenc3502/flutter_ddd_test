@@ -4,11 +4,13 @@ import '../../domain/entity/board.dart';
 import '../../domain/usecases/create_board_usecase.dart';
 import '../../domain/usecases/list_boards_usecase.dart';
 import '../../domain/usecases/read_board_usecase.dart';
+import '../../domain/usecases/update_board_usecase.dart';
 
 class BoardProvider with ChangeNotifier {
   final ListBoardsUseCase listBoardsUseCase;
   final CreateBoardUseCase createBoardUseCase;
   final ReadBoardUseCase readBoardUseCase;
+  final UpdateBoardUseCase updateBoardUseCase;
 
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
@@ -27,6 +29,7 @@ class BoardProvider with ChangeNotifier {
     required this.listBoardsUseCase,
     required this.createBoardUseCase,
     required this.readBoardUseCase,
+    required this.updateBoardUseCase,
   }) {
     _initBoards();
   }
@@ -99,7 +102,7 @@ class BoardProvider with ChangeNotifier {
 
   Future<void> readBoard(int boardId) async {
     try {
-      print('Attempting to read board with ID: $boardId');  // boardId 출력
+      print('Attempting to read board with ID: $boardId'); // boardId 출력
 
       isReading = true;
       print('Calling ReadBoardUseCase to fetch board...');
@@ -128,11 +131,39 @@ class BoardProvider with ChangeNotifier {
   }
 
   // 특정 게시글을 업데이트하는 메소드
-  void updateBoard(Board updatedBoard) {
-    final index = boards.indexWhere((board) => board.id == updatedBoard.id);
-    if (index != -1) {
-      boards[index] = updatedBoard; // 게시글 수정
-      notifyListeners(); // 리스너들에게 알림
+  Future<void> updateBoard(Board updatedBoard) async {
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      final userToken = await _secureStorage.read(key: 'userToken');
+      if (userToken == null) {
+        message = '로그인 상태가 아닙니다. 먼저 로그인 해주세요.';
+        return;
+      }
+
+      final updatedBoardFromServer = await updateBoardUseCase.execute(
+        updatedBoard.id,
+        updatedBoard.title,
+        updatedBoard.content,
+        userToken,
+      );
+
+      // 옵티미스틱 업데이트
+      final index = boards.indexWhere((board) => board.id == updatedBoard.id);
+      if (index != -1) {
+        boards[index] = updatedBoardFromServer; // 서버에서 받은 업데이트된 데이터로 교체
+        message = '게시물이 성공적으로 수정되었습니다.';
+      } else {
+        message = '게시글을 찾을 수 없습니다.';
+      }
+    } on Exception catch (e) {
+      print('게시글 수정 중 오류 발생: $e');
+      message = '게시글 수정에 실패했습니다. 다시 시도해주세요.';
+      // 옵티미스틱 업데이트를 취소하고 이전 상태로 복원 (필요한 경우)
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
   }
 
