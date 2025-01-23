@@ -126,4 +126,23 @@ class BoardProvider with ChangeNotifier {
     selectedBoard = null;
     notifyListeners();
   }
+
+  // 특정 게시글을 업데이트하는 메소드
+  void updateBoard(Board updatedBoard) {
+    final index = boards.indexWhere((board) => board.id == updatedBoard.id);
+    if (index != -1) {
+      boards[index] = updatedBoard; // 게시글 수정
+      notifyListeners(); // 리스너들에게 알림
+    }
+  }
+
+  // 게시글을 아이디로 찾는 메소드 (예시)
+  Board getBoardById(int boardId) {
+    return boards.firstWhere(
+      (board) => board.id == boardId,
+      orElse: () {
+        throw Exception("Board with id $boardId not found");
+      },
+    );
+  }
 }

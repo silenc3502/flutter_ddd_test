@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ddd_test/board/presentation/ui/board_modify_page.dart';
 import 'package:provider/provider.dart';
 import '../config/base_url_provider.dart';
 import 'domain/usecases/create_board_usecase_impl.dart';
@@ -112,6 +113,45 @@ class BoardModule {
               readBoardUseCase: context.read<ReadBoardUseCaseImpl>(),
             )..readBoard(boardId),
             child: BoardReadPage(),
+          );
+        },
+      ),
+    );
+  }
+
+  static Widget provideBoardModifyPage(int boardId) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<BaseUrlProvider>(
+          create: (_) => BaseUrlProvider(),
+        ),
+        ProxyProvider<BaseUrlProvider, BoardRemoteDataSource>(
+          update: (_, baseUrlProvider, __) =>
+              BoardRemoteDataSource(baseUrlProvider.baseUrl),
+        ),
+        ProxyProvider<BoardRemoteDataSource, BoardRepositoryImpl>(
+          update: (_, remoteDataSource, __) =>
+              BoardRepositoryImpl(remoteDataSource),
+        ),
+        ProxyProvider<BoardRepositoryImpl, ReadBoardUseCaseImpl>(
+          update: (_, repository, __) => ReadBoardUseCaseImpl(repository),
+        ),
+        ProxyProvider<BoardRepositoryImpl, ListBoardsUseCaseImpl>(
+          update: (_, repository, __) => ListBoardsUseCaseImpl(repository),
+        ),
+        ProxyProvider<BoardRepositoryImpl, CreateBoardUseCaseImpl>(
+          update: (_, repository, __) => CreateBoardUseCaseImpl(repository),
+        ),
+      ],
+      child: Builder(
+        builder: (context) {
+          return ChangeNotifierProvider<BoardProvider>(
+            create: (_) => BoardProvider(
+              listBoardsUseCase: context.read<ListBoardsUseCaseImpl>(),
+              createBoardUseCase: context.read<CreateBoardUseCaseImpl>(),
+              readBoardUseCase: context.read<ReadBoardUseCaseImpl>(),
+            )..readBoard(boardId), // 로딩이나 초기화할 작업 수행
+            child: BoardModifyPage(boardId: boardId),  // BoardModifyPage로 이동
           );
         },
       ),

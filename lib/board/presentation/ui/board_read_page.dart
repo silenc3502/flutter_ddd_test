@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../board_module.dart';
 import '../providers/board_providers.dart';
+import 'board_modify_page.dart';
 
 class BoardReadPage extends StatelessWidget {
   @override
@@ -29,6 +31,13 @@ class BoardReadPage extends StatelessWidget {
                 onPressed: () {
                   print('Edit button pressed');
                   // Navigator.pushNamed(context, '/editBoard', arguments: selectedBoard.id);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      // builder: (context) => BoardModifyPage(boardId: selectedBoard.id),
+                      builder: (context) => BoardModule.provideBoardModifyPage(selectedBoard.id),
+                    ),
+                  );
                 },
               ),
               IconButton(
