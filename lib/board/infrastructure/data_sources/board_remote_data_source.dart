@@ -97,6 +97,19 @@ class BoardRemoteDataSource {
     }
   }
 
+  Future<void> updateBoard(int boardId, String title, String content, String userToken) async {
+    final url = Uri.parse('$baseUrl/board/modify/$boardId');
+    final response = await http.post(url, body: {
+      'title': title,
+      'content': content,
+      'userToken': userToken,
+    });
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update the board: ${response.body}');
+    }
+  }
+
   // String을 int로 변환하는 안전한 함수
   int _parseInt(dynamic value) {
     if (value is String) {

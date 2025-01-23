@@ -56,4 +56,14 @@ class BoardRepositoryImpl implements BoardRepository {
       return null;
     }
   }
+
+  @override
+  Future<Board> updateBoard(int id, String title, String content, String userToken) {
+    throw UnimplementedError();
+  }
+
+  // @override
+  // Future<Board> updateBoard(int id, String title, String content, String userToken) async {
+  //   await remoteDataSource.updateBoard(id, title, content, userToken);
+  // }
 }
