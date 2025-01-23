@@ -13,6 +13,16 @@ class Board {
     required this.createDate,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      'boardId': id,
+      'title': title,
+      'content': content,
+      'nickname': nickname,
+      'createDate': createDate,
+    };
+  }
+
   // JSON 데이터를 Board 객체로 변환
   factory Board.fromJson(Map<String, dynamic> json) {
     try {

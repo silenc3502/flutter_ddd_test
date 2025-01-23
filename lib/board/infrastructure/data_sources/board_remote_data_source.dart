@@ -78,6 +78,25 @@ class BoardRemoteDataSource {
     }
   }
 
+  Future<Board?> fetchBoard(int boardId) async {
+    try {
+      print('Fetching board with ID: $boardId');  // 요청하는 boardId 출력
+      final response = await http.get(Uri.parse('$baseUrl/board/read/$boardId'));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print('Board data fetched successfully: $data');  // 성공적인 응답 출력
+        return Board.fromJson(data);
+      } else {
+        print('Failed to load board: ${response.statusCode}');  // 실패 시 상태 코드 출력
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching board: $e');  // 예외 발생 시 출력
+      return null;
+    }
+  }
+
   // String을 int로 변환하는 안전한 함수
   int _parseInt(dynamic value) {
     if (value is String) {

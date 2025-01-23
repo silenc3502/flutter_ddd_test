@@ -34,4 +34,26 @@ class BoardRepositoryImpl implements BoardRepository {
       throw Exception('Failed to create board');
     }
   }
+
+  @override
+  Future<Board?> readBoard(int boardId) async {
+    try {
+      print('Attempting to read board with ID: $boardId');  // boardId 출력
+
+      // 데이터 받아오기
+      final board = await remoteDataSource.fetchBoard(boardId);
+
+      // 데이터를 출력
+      if (board != null) {
+        print('readBoard() Board data fetched: ${board.toJson()}');  // Board 객체의 데이터를 JSON 형태로 출력
+      } else {
+        print('No board found for ID: $boardId');
+      }
+
+      return board;  // 데이터 반환
+    } catch (e) {
+      print('Error fetching board from repository: $e');  // 예외 발생 시 출력
+      return null;
+    }
+  }
 }

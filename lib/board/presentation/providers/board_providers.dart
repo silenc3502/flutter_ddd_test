@@ -3,14 +3,21 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../domain/entity/board.dart';
 import '../../domain/usecases/create_board_usecase.dart';
 import '../../domain/usecases/list_boards_usecase.dart';
+import '../../domain/usecases/read_board_usecase.dart';
 
 class BoardProvider with ChangeNotifier {
   final ListBoardsUseCase listBoardsUseCase;
-  final CreateBoardUseCase createBoardUseCase; // CreateBoardUseCase 추가
+  final CreateBoardUseCase createBoardUseCase;
+  final ReadBoardUseCase readBoardUseCase;
+
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   List<Board> boards = [];
+  Board? selectedBoard;
+
   bool isLoading = false;
+  bool isReading = false;
+
   String message = '';
   int totalItems = 0;
   int totalPages = 0;
@@ -18,7 +25,8 @@ class BoardProvider with ChangeNotifier {
 
   BoardProvider({
     required this.listBoardsUseCase,
-    required this.createBoardUseCase, // 생성자에서 전달
+    required this.createBoardUseCase,
+    required this.readBoardUseCase,
   }) {
     _initBoards();
   }
@@ -87,5 +95,35 @@ class BoardProvider with ChangeNotifier {
       isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> readBoard(int boardId) async {
+    try {
+      print('Attempting to read board with ID: $boardId');  // boardId 출력
+
+      isReading = true;
+      print('Calling ReadBoardUseCase to fetch board...');
+      selectedBoard = await readBoardUseCase.execute(boardId);
+      notifyListeners();
+
+      // 결과가 null인 경우에도 상태 출력
+      if (selectedBoard == null) {
+        print('No board found for ID: $boardId');
+      } else {
+        print('Board found: ${selectedBoard!.title}');
+      }
+    } catch (e) {
+      print('Error reading board: $e');
+      selectedBoard = null;
+    } finally {
+      isReading = false;
+      notifyListeners();
+      print('Reading complete. isReading: $isReading');
+    }
+  }
+
+  void clearSelectedBoard() {
+    selectedBoard = null;
+    notifyListeners();
   }
 }

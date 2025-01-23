@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_ddd_test/board/presentation/ui/board_read_page.dart';
+import 'package:provider/provider.dart';
 import '../../../../common_ui/card_item.dart';
+import '../../../board_module.dart';
+import '../../providers/board_providers.dart';
 
 class BoardList extends StatelessWidget {
   final List<dynamic> boards;
@@ -21,6 +24,21 @@ class BoardList extends StatelessWidget {
           content: board.content,
           nickname: board.nickname,
           createDate: board.createDate,
+          onTap: () async {
+            print('BoardList item tapped: ${board.title}');
+
+            // 비동기적으로 게시글 읽기
+            // final boardProvider = Provider.of<BoardProvider>(context, listen: false);
+            // await boardProvider.readBoard(board.id);
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BoardModule.provideBoardReadPage(board.id),
+                // builder: (context) => BoardReadPage(),
+              ),
+            );
+          },
         );
       }),
     );

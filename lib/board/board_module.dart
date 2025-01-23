@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ddd_test/board/presentation/ui/board_create_page.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 import '../config/base_url_provider.dart';
 import 'domain/usecases/create_board_usecase_impl.dart';
-import 'presentation/ui/board_list_page.dart';
-import 'presentation/providers/board_providers.dart';
-import 'infrastructure/data_sources/board_remote_data_source.dart';
+import 'domain/usecases/read_board_usecase_impl.dart';  // 추가
 import 'domain/usecases/list_boards_usecase_impl.dart';
+import 'presentation/ui/board_create_page.dart';
+import 'presentation/ui/board_read_page.dart';
+import 'presentation/ui/board_list_page.dart';
+import 'infrastructure/data_sources/board_remote_data_source.dart';
 import 'infrastructure/repository/board_repository_impl.dart';
+import 'presentation/providers/board_providers.dart';
 
 class BoardModule {
   static Widget provideBoardListPage() {
@@ -29,14 +29,17 @@ class BoardModule {
         ProxyProvider<BoardRepositoryImpl, ListBoardsUseCaseImpl>(
           update: (_, repository, __) => ListBoardsUseCaseImpl(repository),
         ),
-        // CreateBoardUseCaseImpl을 먼저 추가합니다.
         ProxyProvider<BoardRepositoryImpl, CreateBoardUseCaseImpl>(
           update: (_, repository, __) => CreateBoardUseCaseImpl(repository),
+        ),
+        ProxyProvider<BoardRepositoryImpl, ReadBoardUseCaseImpl>(  // 추가
+          update: (_, repository, __) => ReadBoardUseCaseImpl(repository),
         ),
         ChangeNotifierProvider<BoardProvider>(
           create: (context) => BoardProvider(
             listBoardsUseCase: context.read<ListBoardsUseCaseImpl>(),
             createBoardUseCase: context.read<CreateBoardUseCaseImpl>(),
+            readBoardUseCase: context.read<ReadBoardUseCaseImpl>(),  // 직접 전달
           ),
         ),
       ],
@@ -44,11 +47,9 @@ class BoardModule {
     );
   }
 
-  // Provides the BoardCreatePage with necessary dependencies
   static Widget provideBoardCreatePage() {
     return MultiProvider(
       providers: [
-        // Add common dependencies here if needed, such as BaseUrlProvider, etc.
         ChangeNotifierProvider<BaseUrlProvider>(
           create: (_) => BaseUrlProvider(),
         ),
@@ -66,16 +67,54 @@ class BoardModule {
         ProxyProvider<BoardRepositoryImpl, CreateBoardUseCaseImpl>(
           update: (_, repository, __) => CreateBoardUseCaseImpl(repository),
         ),
-        // You can pass the same BoardProvider here, if needed
         ChangeNotifierProvider<BoardProvider>(
           create: (context) => BoardProvider(
             listBoardsUseCase: context.read<ListBoardsUseCaseImpl>(),
             createBoardUseCase: context.read<CreateBoardUseCaseImpl>(),
+            readBoardUseCase: context.read<ReadBoardUseCaseImpl>(),  // 직접 전달
           ),
         ),
       ],
-      child: BoardCreatePage(),  // The actual page you're navigating to
+      child: BoardCreatePage(),
+    );
+  }
+
+  static Widget provideBoardReadPage(int boardId) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<BaseUrlProvider>(
+          create: (_) => BaseUrlProvider(),
+        ),
+        ProxyProvider<BaseUrlProvider, BoardRemoteDataSource>(
+          update: (_, baseUrlProvider, __) =>
+              BoardRemoteDataSource(baseUrlProvider.baseUrl),
+        ),
+        ProxyProvider<BoardRemoteDataSource, BoardRepositoryImpl>(
+          update: (_, remoteDataSource, __) =>
+              BoardRepositoryImpl(remoteDataSource),
+        ),
+        ProxyProvider<BoardRepositoryImpl, ReadBoardUseCaseImpl>(
+          update: (_, repository, __) => ReadBoardUseCaseImpl(repository),
+        ),
+        ProxyProvider<BoardRepositoryImpl, ListBoardsUseCaseImpl>(
+          update: (_, repository, __) => ListBoardsUseCaseImpl(repository),
+        ),
+        ProxyProvider<BoardRepositoryImpl, CreateBoardUseCaseImpl>(
+          update: (_, repository, __) => CreateBoardUseCaseImpl(repository),
+        ),
+      ],
+      child: Builder(
+        builder: (context) {
+          return ChangeNotifierProvider<BoardProvider>(
+            create: (_) => BoardProvider(
+              listBoardsUseCase: context.read<ListBoardsUseCaseImpl>(),
+              createBoardUseCase: context.read<CreateBoardUseCaseImpl>(),
+              readBoardUseCase: context.read<ReadBoardUseCaseImpl>(),
+            )..readBoard(boardId),
+            child: BoardReadPage(),
+          );
+        },
+      ),
     );
   }
 }
-
