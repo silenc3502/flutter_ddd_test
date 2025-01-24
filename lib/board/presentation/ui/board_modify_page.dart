@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../domain/usecases/update_board_usecase.dart';
 import '../providers/board_modify_provider.dart';
+import '../providers/board_read_providers.dart';
 
 class BoardModifyPage extends StatefulWidget {
   final int boardId;
@@ -27,12 +28,20 @@ class _BoardModifyPageState extends State<BoardModifyPage> {
   @override
   void initState() {
     super.initState();
+    // Initialize controllers with initial data
     _titleController = TextEditingController(text: widget.initialTitle);
     _contentController = TextEditingController(text: widget.initialContent);
   }
 
   @override
   Widget build(BuildContext context) {
+    final boardModifyProvider = Provider.of<BoardModifyProvider>(context);
+
+    // Check if the board data is being fetched or not
+    if (boardModifyProvider.isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('게시글 수정'),
@@ -65,35 +74,28 @@ class _BoardModifyPageState extends State<BoardModifyPage> {
     final updatedTitle = _titleController.text;
     final updatedContent = _contentController.text;
 
-    // Print the updated title and content
     print("Updated Title: $updatedTitle");
     print("Updated Content: $updatedContent");
 
-    // Fetch the userToken from storage and call the update method
     _getUserTokenAndUpdate(updatedTitle, updatedContent);
   }
 
   Future<void> _getUserTokenAndUpdate(String title, String content) async {
     try {
-      // Retrieve the userToken from SecureStorage
       final userToken = await _secureStorage.read(key: 'userToken');
       print("Fetched userToken: $userToken");
 
       if (userToken == null) {
-        // Handle the case where userToken is not available
         throw Exception('User is not logged in.');
       }
 
-      // Use the UpdateBoardUseCase to send the updated data to the backend
-      final updateBoardUseCase = Provider.of<UpdateBoardUseCase>(context, listen: false);
-      print("Calling updateBoardUseCase.execute() with userToken: $userToken");
-      await updateBoardUseCase.execute(widget.boardId, title, content, userToken);
+      final boardModifyProvider =
+          Provider.of<BoardModifyProvider>(context, listen: false);
+      await boardModifyProvider.updateBoard(title, content, userToken);
 
-      // Show success message or navigate back
       print("Board updated successfully");
-      Navigator.of(context).pop();
+      Navigator.of(context).pop({'title': title, 'content': content});
     } catch (e) {
-      // Handle the error
       print("Error during board update: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('게시글 수정 실패: ${e.toString()}')),

@@ -113,19 +113,39 @@ class BoardRemoteDataSource {
     if (response.statusCode == 200) {
       // 서버 응답을 파싱하여 수정된 게시글 반환
       final data = json.decode(response.body);
-      print('Board updated successfully: $data'); // 성공 로그
+      print('BoardRemoteDataSource Board updated successfully: $data'); // 성공 로그
+      final boardId = data['boardId'];
+      print('BoardRemoteDataSource boardId: $boardId');
 
       return Board(
-        id: data['data']['boardId'] ?? boardId, // boardId가 응답에 없으면 기존 값 사용
-        title: data['data']['title'] ?? title, // 응답 없으면 기존 값 사용
-        content: data['data']['content'] ?? content,
-        nickname: data['data']['writerNickname'] ?? 'Anonymous',
-        createDate: data['data']['createDate'] ?? 'Unknown',
+        id: data['boardId'] ?? boardId, // boardId가 응답에 없으면 기존 값 사용
+        title: data['title'] ?? title, // 응답 없으면 기존 값 사용
+        content: data['content'] ?? content,
+        nickname: data['writerNickname'] ?? 'Anonymous',
+        createDate: data['createDate'] ?? 'Unknown',
       );
     } else {
       // 상태 코드가 200이 아닌 경우 예외 처리
       print('Failed to update the board: ${response.body}');
       throw Exception('Failed to update the board: ${response.body}');
+    }
+  }
+
+  Future<void> deleteBoard(int boardId, String userToken) async {
+    final url = Uri.parse('$baseUrl/board/delete/$boardId');
+
+    final response = await http.delete(
+      url,
+      body: {
+        'userToken': userToken,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      // 게시글 삭제가 성공적으로 처리되었으므로 반환값 없음
+      return;
+    } else {
+      throw Exception('게시글 삭제 실패');
     }
   }
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../board_module.dart';
+import '../../domain/entity/board.dart';
+import '../providers/board_list_providers.dart';
 import '../providers/board_read_providers.dart';
 import 'board_modify_page.dart';
 
@@ -15,46 +17,79 @@ class _BoardReadPageState extends State<BoardReadPage> {
     super.initState();
     // 게시글 데이터를 가져옵니다.
     final boardReadProvider =
-    Provider.of<BoardReadProvider>(context, listen: false);
-
+        Provider.of<BoardReadProvider>(context, listen: false);
     if (boardReadProvider.board == null) {
       boardReadProvider.fetchBoard();
     }
+  }
+
+  Future<bool> _onWillPop() async {
+    // 뒤로가기 버튼 이벤트 처리
+    final boardReadProvider =
+        Provider.of<BoardReadProvider>(context, listen: false);
+    final updatedBoard = boardReadProvider.board;
+
+    // 현재 수정된 게시글 데이터를 반환하며 뒤로가기
+    Navigator.pop(context, updatedBoard);
+    return Future.value(false); // 기본 뒤로가기 동작 방지
   }
 
   @override
   Widget build(BuildContext context) {
     final boardReadProvider = Provider.of<BoardReadProvider>(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('게시글 상세보기'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.edit),
-            onPressed: () {
-              final selectedBoard = boardReadProvider.board;
-              if (selectedBoard != null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => BoardModule.provideBoardModifyPage(
-                      selectedBoard.id,
-                      selectedBoard.title,
-                      selectedBoard.content,
+    return WillPopScope(
+      onWillPop: _onWillPop, // 뒤로가기 이벤트 처리
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('게시글 상세보기'),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () {
+                final selectedBoard = boardReadProvider.board;
+                if (selectedBoard != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BoardModule.provideBoardModifyPage(
+                        selectedBoard.id,
+                        selectedBoard.title,
+                        selectedBoard.content,
+                      ),
                     ),
-                  ),
-                );
-              }
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () => _showDeleteDialog(context, boardReadProvider),
-          ),
-        ],
+                  ).then((updatedData) {
+                    if (updatedData != null &&
+                        updatedData is Map<String, dynamic>) {
+                      final updatedTitle =
+                          updatedData['title'] ?? selectedBoard.title;
+                      final updatedContent =
+                          updatedData['content'] ?? selectedBoard.content;
+
+                      // 생성된 Board 객체
+                      final updatedBoard = Board(
+                        id: selectedBoard.id,
+                        title: updatedTitle,
+                        content: updatedContent,
+                        nickname: selectedBoard.nickname,
+                        createDate: selectedBoard.createDate,
+                      );
+
+                      // 상세 페이지 갱신
+                      boardReadProvider.updateBoard(updatedBoard);
+                    }
+                  });
+                }
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () => _showDeleteDialog(context, boardReadProvider),
+            ),
+          ],
+        ),
+        body: _buildBody(boardReadProvider),
       ),
-      body: _buildBody(boardReadProvider),
     );
   }
 
@@ -121,10 +156,10 @@ class _BoardReadPageState extends State<BoardReadPage> {
             child: Text('취소'),
           ),
           TextButton(
-            onPressed: () {
-              // boardReadProvider.deleteBoard();
+            onPressed: () async {
+              await boardReadProvider.deleteBoard();
               Navigator.of(context).pop(); // Close the dialog
-              Navigator.of(context).pop(); // Go back to the previous page
+              Navigator.of(context).pop({'deleted': true}); // Indicate deletion
             },
             child: Text('삭제'),
           ),

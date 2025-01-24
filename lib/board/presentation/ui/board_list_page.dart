@@ -23,8 +23,9 @@ class _BoardListPageState extends State<BoardListPage> {
 
     // WidgetsBinding을 사용하여 build가 완료된 후 게시글을 불러옵니다.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final boardListProvider = Provider.of<BoardListProvider>(context, listen: false);
-      boardListProvider.listBoards(1, 6);
+      final boardListProvider =
+          Provider.of<BoardListProvider>(context, listen: false);
+      boardListProvider.listBoards(1, 6); // 처음에 목록을 불러옴
     });
   }
 
@@ -36,16 +37,17 @@ class _BoardListPageState extends State<BoardListPage> {
 
   // 페이지를 클릭했을 때 호출되는 함수
   void _onPageChanged(int page) {
-    final boardListProvider = Provider.of<BoardListProvider>(context, listen: false);
+    final boardListProvider =
+        Provider.of<BoardListProvider>(context, listen: false);
     boardListProvider.listBoards(page, 6); // Load boards for the selected page
   }
 
   @override
   Widget build(BuildContext context) {
     final double appBarHeight = kToolbarHeight; // AppBar 기본 높이
-    final double statusBarHeight = MediaQuery.of(context).padding.top; // 상태 표시줄 높이
-    final double contentTopPadding =
-        appBarHeight; // 간격 계산
+    final double statusBarHeight =
+        MediaQuery.of(context).padding.top; // 상태 표시줄 높이
+    final double contentTopPadding = appBarHeight; // 간격 계산
 
     return Scaffold(
       appBar: PreferredSize(
@@ -63,12 +65,14 @@ class _BoardListPageState extends State<BoardListPage> {
               padding: EdgeInsets.only(top: contentTopPadding), // 동적으로 계산된 간격
               child: Consumer<BoardListProvider>(
                 builder: (context, boardListProvider, child) {
-                  if (boardListProvider.isLoading && boardListProvider.boards.isEmpty) {
+                  if (boardListProvider.isLoading &&
+                      boardListProvider.boards.isEmpty) {
                     return LoadingIndicator(); // 공통 UI 사용
                   }
 
                   if (boardListProvider.message.isNotEmpty) {
-                    return ErrorMessage(message: boardListProvider.message); // 공통 UI 사용
+                    return ErrorMessage(
+                        message: boardListProvider.message); // 공통 UI 사용
                   }
 
                   return PageContent(
@@ -87,9 +91,15 @@ class _BoardListPageState extends State<BoardListPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => BoardModule.provideBoardCreatePage(),
+                      builder: (context) =>
+                          BoardModule.provideBoardCreatePage(),
                     ),
-                  );
+                  ).then((_) {
+                    // 게시글 작성 후 돌아오면 목록 갱신
+                    final boardListProvider =
+                        Provider.of<BoardListProvider>(context, listen: false);
+                    boardListProvider.listBoards(1, 6); // 목록을 다시 불러옴
+                  });
                 },
                 child: Icon(Icons.add),
                 tooltip: 'Create Board',

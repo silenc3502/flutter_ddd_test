@@ -141,6 +141,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'domain/usecases/create_board_usecase_impl.dart';
+import 'domain/usecases/delete_board_usecase_impl.dart';
 import 'domain/usecases/read_board_usecase_impl.dart';
 import 'domain/usecases/list_boards_usecase_impl.dart';
 import 'domain/usecases/update_board_usecase_impl.dart';
@@ -153,7 +154,6 @@ import 'presentation/ui/board_read_page.dart';
 import 'presentation/ui/board_modify_page.dart';
 
 import 'package:flutter/material.dart';
-
 
 class BoardModule {
   static final String baseUrl = dotenv.env['BASE_URL'] ?? '';
@@ -168,6 +168,7 @@ class BoardModule {
   static final createBoardUseCase = CreateBoardUseCaseImpl(boardRepository);
   static final readBoardUseCase = ReadBoardUseCaseImpl(boardRepository);
   static final updateBoardUseCase = UpdateBoardUseCaseImpl(boardRepository);
+  static final deleteBoardUseCase = DeleteBoardUseCaseImpl(boardRepository);
 
   // Common providers
   static List<SingleChildWidget> _provideCommonProviders() {
@@ -177,6 +178,7 @@ class BoardModule {
       Provider(create: (_) => createBoardUseCase),
       Provider(create: (_) => readBoardUseCase),
       Provider(create: (_) => updateBoardUseCase),
+      Provider(create: (_) => deleteBoardUseCase),
     ];
   }
 
@@ -185,7 +187,9 @@ class BoardModule {
     return MultiProvider(
       providers: [
         ..._provideCommonProviders(),
-        ChangeNotifierProvider(create: (_) => BoardListProvider(listBoardsUseCase: listBoardsUseCase)),
+        ChangeNotifierProvider(
+            create: (_) =>
+                BoardListProvider(listBoardsUseCase: listBoardsUseCase)),
       ],
       child: BoardListPage(),
     );
@@ -197,7 +201,8 @@ class BoardModule {
       providers: [
         ..._provideCommonProviders(),
         ChangeNotifierProvider(
-          create: (_) => BoardCreateProvider(createBoardUseCase: createBoardUseCase),
+          create: (_) =>
+              BoardCreateProvider(createBoardUseCase: createBoardUseCase),
         ),
       ],
       child: BoardCreatePage(),
@@ -212,6 +217,7 @@ class BoardModule {
         ChangeNotifierProvider(
           create: (_) => BoardReadProvider(
             readBoardUseCase: readBoardUseCase,
+            deleteBoardUseCase: deleteBoardUseCase,
             boardId: boardId,
           )..fetchBoard(), // 데이터 로딩 시작
         ),
@@ -221,7 +227,8 @@ class BoardModule {
   }
 
   // BoardModifyPage provider
-  static Widget provideBoardModifyPage(int boardId, String title, String content) {
+  static Widget provideBoardModifyPage(
+      int boardId, String title, String content) {
     return MultiProvider(
       providers: [
         ..._provideCommonProviders(),

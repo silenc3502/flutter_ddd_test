@@ -43,4 +43,14 @@ class BoardListProvider with ChangeNotifier {
   void changePage(int page, int perPage) {
     listBoards(page, perPage);
   }
+
+  void updateBoard(Board updatedBoard) {
+    final index = boards.indexWhere((board) => board.id == updatedBoard.id);
+    print('BoardListProvider updateBoard() boards: $boards');
+    if (index != -1) {
+      print('BoardListProvider updateBoard() update list');
+      boards[index] = updatedBoard;
+      notifyListeners();
+    }
+  }
 }

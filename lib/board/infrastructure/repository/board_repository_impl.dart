@@ -59,21 +59,35 @@ class BoardRepositoryImpl implements BoardRepository {
   }
 
   @override
-  Future<Board> updateBoard(
+  Future<Board?> updateBoard(
       int boardId, String title, String content, String userToken) async {
     try {
       print('Attempting to update board with ID: $boardId');
       print('New title: $title, content: $content, userToken: $userToken');
 
-      // 데이터 업데이트
       final updatedBoard = await remoteDataSource.updateBoard(
           boardId, title, content, userToken);
+
+      print("Response from RemoteDataSource: $updatedBoard");
+
+      if (updatedBoard == null) {
+        throw Exception("Invalid response or missing data field.");
+      }
 
       print('Board updated successfully: ${updatedBoard.toJson()}');
       return updatedBoard;
     } catch (e) {
-      print('Error updating board: $e');
-      rethrow; // 상위 호출자에게 예외 전달
+      print('Error in updateBoard repository: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> deleteBoard(int id, String userToken) async {
+    try {
+      return await remoteDataSource.deleteBoard(id, userToken);
+    } catch (e) {
+      throw Exception('게시글 삭제 실패: $e');
     }
   }
 }
