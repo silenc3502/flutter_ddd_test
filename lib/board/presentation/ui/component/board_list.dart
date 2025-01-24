@@ -25,17 +25,11 @@ class BoardList extends StatelessWidget {
           nickname: board.nickname,
           createDate: board.createDate,
           onTap: () async {
-            print('BoardList item tapped: ${board.title}');
-
             // 비동기적으로 게시글 읽기
-            // final boardProvider = Provider.of<BoardProvider>(context, listen: false);
-            // await boardProvider.readBoard(board.id);
-
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => BoardModule.provideBoardReadPage(board.id),
-                // builder: (context) => BoardReadPage(),
               ),
             );
           },

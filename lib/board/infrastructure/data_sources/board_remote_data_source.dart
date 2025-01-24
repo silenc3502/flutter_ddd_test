@@ -101,11 +101,14 @@ class BoardRemoteDataSource {
   Future<Board> updateBoard(
       int boardId, String title, String content, String userToken) async {
     final url = Uri.parse('$baseUrl/board/modify/$boardId');
-    final response = await http.post(url, body: {
-      'title': title,
-      'content': content,
-      'userToken': userToken,
-    });
+    final response = await http.put(
+      url,
+      body: {
+        'title': title,
+        'content': content,
+        'userToken': userToken,
+      },
+    );
 
     if (response.statusCode == 200) {
       // 서버 응답을 파싱하여 수정된 게시글 반환

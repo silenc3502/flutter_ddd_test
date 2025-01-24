@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../domain/entity/board.dart';
-import '../providers/board_providers.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../domain/usecases/update_board_usecase.dart';
+import '../providers/board_modify_provider.dart';
 
 class BoardModifyPage extends StatefulWidget {
   final int boardId;
+  final String initialTitle;
+  final String initialContent;
 
-  BoardModifyPage({required this.boardId});
+  BoardModifyPage({
+    required this.boardId,
+    required this.initialTitle,
+    required this.initialContent,
+  });
 
   @override
   _BoardModifyPageState createState() => _BoardModifyPageState();
@@ -15,77 +22,89 @@ class BoardModifyPage extends StatefulWidget {
 class _BoardModifyPageState extends State<BoardModifyPage> {
   late TextEditingController _titleController;
   late TextEditingController _contentController;
+  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   @override
   void initState() {
     super.initState();
-    // 게시글 정보를 가져와서 초기화합니다.
-    final boardProvider = Provider.of<BoardProvider>(context, listen: false);
-    final selectedBoard = boardProvider.getBoardById(widget.boardId);
-
-    _titleController = TextEditingController(text: selectedBoard?.title ?? '');
-    _contentController =
-        TextEditingController(text: selectedBoard?.content ?? '');
+    _titleController = TextEditingController(text: widget.initialTitle);
+    _contentController = TextEditingController(text: widget.initialContent);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<BoardProvider>(
-      builder: (context, boardProvider, child) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Text('게시글 수정'),
-            actions: [
-              IconButton(
-                icon: Icon(Icons.save),
-                onPressed: () {
-                  final updatedBoard = Board(
-                    id: widget.boardId,
-                    title: _titleController.text,
-                    content: _contentController.text,
-                    nickname: "", // 수정하지 않으면 이전 값 그대로
-                    createDate: "", // 수정하지 않으면 이전 값 그대로
-                  );
-
-                  // 수정된 내용을 저장하는 로직 추가
-                  boardProvider.updateBoard(updatedBoard);
-                  Navigator.pop(context); // 수정 완료 후 이전 페이지로 돌아가기
-                },
-              ),
-            ],
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '제목',
-                  style: TextStyle(fontSize: 18),
-                ),
-                TextField(
-                  controller: _titleController,
-                  decoration: InputDecoration(
-                    hintText: '게시글 제목을 입력하세요',
-                  ),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  '내용',
-                  style: TextStyle(fontSize: 18),
-                ),
-                TextField(
-                  controller: _contentController,
-                  decoration: InputDecoration(
-                    hintText: '게시글 내용을 입력하세요',
-                  ),
-                  maxLines: 6, // 여러 줄 입력을 위해
-                ),
-              ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('게시글 수정'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextFormField(
+              controller: _titleController,
+              decoration: InputDecoration(labelText: '제목'),
             ),
-          ),
-        );
-      },
+            TextFormField(
+              controller: _contentController,
+              decoration: InputDecoration(labelText: '내용'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _submitUpdate,
+              child: Text('수정 완료'),
+            ),
+          ],
+        ),
+      ),
     );
+  }
+
+  void _submitUpdate() {
+    final updatedTitle = _titleController.text;
+    final updatedContent = _contentController.text;
+
+    // Print the updated title and content
+    print("Updated Title: $updatedTitle");
+    print("Updated Content: $updatedContent");
+
+    // Fetch the userToken from storage and call the update method
+    _getUserTokenAndUpdate(updatedTitle, updatedContent);
+  }
+
+  Future<void> _getUserTokenAndUpdate(String title, String content) async {
+    try {
+      // Retrieve the userToken from SecureStorage
+      final userToken = await _secureStorage.read(key: 'userToken');
+      print("Fetched userToken: $userToken");
+
+      if (userToken == null) {
+        // Handle the case where userToken is not available
+        throw Exception('User is not logged in.');
+      }
+
+      // Use the UpdateBoardUseCase to send the updated data to the backend
+      final updateBoardUseCase = Provider.of<UpdateBoardUseCase>(context, listen: false);
+      print("Calling updateBoardUseCase.execute() with userToken: $userToken");
+      await updateBoardUseCase.execute(widget.boardId, title, content, userToken);
+
+      // Show success message or navigate back
+      print("Board updated successfully");
+      Navigator.of(context).pop();
+    } catch (e) {
+      // Handle the error
+      print("Error during board update: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('게시글 수정 실패: ${e.toString()}')),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _contentController.dispose();
+    super.dispose();
   }
 }

@@ -1,18 +1,18 @@
-// component/page_content.dart
 import 'package:flutter/material.dart';
 import '../../../../common_ui/pagination.dart';
+import '../../providers/board_list_providers.dart';
 import '../../providers/board_providers.dart';
 import 'board_list.dart';
 
 class PageContent extends StatelessWidget {
-  final BoardProvider boardProvider;
+  final BoardListProvider boardListProvider;
   final Function(int) onPageChanged;
 
-  PageContent({required this.boardProvider, required this.onPageChanged});
+  PageContent({required this.boardListProvider, required this.onPageChanged});
 
   @override
   Widget build(BuildContext context) {
-    List<dynamic> boards = List.from(boardProvider.boards);
+    List<dynamic> boards = List.from(boardListProvider.boards);
     while (boards.length < 6) {
       boards.add(null);  // Add null or any placeholder to ensure 6 items
     }
@@ -29,10 +29,10 @@ class PageContent extends StatelessWidget {
           ),
         ),
         // Pagination section at the bottom
-        if (boardProvider.totalPages > 0)
+        if (boardListProvider.boards.isNotEmpty)
           Pagination(
-            currentPage: boardProvider.currentPage,
-            totalPages: boardProvider.totalPages,
+            currentPage: boardListProvider.currentPage,
+            totalPages: boardListProvider.totalPages,
             onPageChanged: onPageChanged,
           ),
       ],

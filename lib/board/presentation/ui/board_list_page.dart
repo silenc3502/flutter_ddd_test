@@ -4,7 +4,7 @@ import '../../../common_ui/error_message.dart';
 import '../../../common_ui/loading_indicator.dart';
 import '../../../common_ui/custom_app_bar.dart'; // CustomAppBar import
 import '../../board_module.dart';
-import '../providers/board_providers.dart';
+import '../providers/board_list_providers.dart';
 import 'component/page_content.dart';
 import 'board_create_page.dart'; // 게시글 작성 페이지 import
 
@@ -20,6 +20,12 @@ class _BoardListPageState extends State<BoardListPage> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+
+    // WidgetsBinding을 사용하여 build가 완료된 후 게시글을 불러옵니다.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final boardListProvider = Provider.of<BoardListProvider>(context, listen: false);
+      boardListProvider.listBoards(1, 6);
+    });
   }
 
   @override
@@ -30,8 +36,8 @@ class _BoardListPageState extends State<BoardListPage> {
 
   // 페이지를 클릭했을 때 호출되는 함수
   void _onPageChanged(int page) {
-    final boardProvider = Provider.of<BoardProvider>(context, listen: false);
-    boardProvider.changePage(page); // 페이지 변경
+    final boardListProvider = Provider.of<BoardListProvider>(context, listen: false);
+    boardListProvider.listBoards(page, 6); // Load boards for the selected page
   }
 
   @override
@@ -55,18 +61,18 @@ class _BoardListPageState extends State<BoardListPage> {
             // 리스트 콘텐츠
             Padding(
               padding: EdgeInsets.only(top: contentTopPadding), // 동적으로 계산된 간격
-              child: Consumer<BoardProvider>(
-                builder: (context, boardProvider, child) {
-                  if (boardProvider.isLoading && boardProvider.boards.isEmpty) {
+              child: Consumer<BoardListProvider>(
+                builder: (context, boardListProvider, child) {
+                  if (boardListProvider.isLoading && boardListProvider.boards.isEmpty) {
                     return LoadingIndicator(); // 공통 UI 사용
                   }
 
-                  if (boardProvider.message.isNotEmpty) {
-                    return ErrorMessage(message: boardProvider.message); // 공통 UI 사용
+                  if (boardListProvider.message.isNotEmpty) {
+                    return ErrorMessage(message: boardListProvider.message); // 공통 UI 사용
                   }
 
                   return PageContent(
-                    boardProvider: boardProvider,
+                    boardListProvider: boardListProvider,
                     onPageChanged: _onPageChanged, // 페이지 변경 핸들러 전달
                   );
                 },
